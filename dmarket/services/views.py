@@ -2,36 +2,40 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .models import * 
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, redirect
 ##### User API #####
-
+@login_required
 def index(request):
-    return HttpResponse("Hello, world. Distributed Market.")
-    
-def register(request):
-    username = request.GET['username']
-    email = request.GET['email']
-    password = request.GET['password']
-    user = User.objects.create_user(username, email, password)
-    user.save()
+    return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
+# https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return redirect('/')
+    else:
+        form = UserCreationForm()
+    return render(request, 'signup.html', {'form': form})
 
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = User.objects.all()
+# def login(request):
+#     context = {}
+#     context['status'] = True
+#     context['error_code'] = 0
+#     context['message'] = 'User login API'
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
-
-def login(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'User login API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+#     return render(request, 'general_status.json', context, 
+#         content_type='application/json')
 
 ##### Machine API #####
+@login_required
 def submit_machine(request):
     context = {}
     context['status'] = True
@@ -40,7 +44,7 @@ def submit_machine(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def remove_machine(request):
     context = {}
     context['status'] = True
@@ -49,7 +53,7 @@ def remove_machine(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def list_machines(request):
     context = {}
     context['status'] = True
@@ -60,11 +64,12 @@ def list_machines(request):
         content_type='application/json')
 
 ##### Job API #####
+@login_required
 def submit_job(request):
     job = Job()
     job.root_path = request.GET['root_path']
     job.core_num = int(request.GET['core_num'])
-    job.user = User.objects.get(id=request.GET['id'])
+    job.user = User.objects.get(id=request.user.id)
     job.status = 'new'
     job.save()
     context = {}
@@ -74,7 +79,7 @@ def submit_job(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def cancel_job(request):
     context = {}
     context['status'] = True
@@ -83,7 +88,7 @@ def cancel_job(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def get_result(request):
     context = {}
     context['status'] = True
@@ -92,7 +97,7 @@ def get_result(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def get_log(request):
     context = {}
     context['status'] = True
@@ -103,6 +108,7 @@ def get_log(request):
         content_type='application/json')
 
 ##### Credit API #####
+@login_required
 def get_credit(request):
     context = {}
     context['status'] = True
