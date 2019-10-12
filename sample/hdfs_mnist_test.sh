@@ -11,7 +11,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --conf spark.executorEnv.CLASSPATH=$(hadoop classpath --glob) \
 hdfs:///user/root/mnist/input/code/spark/mnist_spark.py \
 --images mnist/output/test/images \
---labels mnist/ouput/test/labels \
+--labels mnist/output/test/labels \
 --mode inference \
 --model mnist/output/mnist_model \
 --output mnist/output/predictions
