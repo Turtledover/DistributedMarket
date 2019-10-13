@@ -61,13 +61,34 @@ def list_machines(request):
 
 ##### Job API #####
 def submit_job(request):
+    context = {}
+    if not 'entry_file' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: entry_file'
+        return render(request, 'general_status.json', context, 
+            content_type='application/json')
+
     job = Job()
-    job.root_path = request.GET['root_path']
+    # job.root_path = request.GET['root_path']
+    
+    # TODO: sanitize parameters
+    if 'libs' in request.GET:
+        job.libs = request.GET['libs']
+    
+    if 'archives' in request.GET:
+        job.archives = request.GET['archives']
+    
+    if 'app_params' in request.GET:
+        job.app_params = request.GET['app_params']
+
+    job.entry_file = request.GET['entry_file']
+
     job.core_num = int(request.GET['core_num'])
     job.user = User.objects.get(id=request.GET['id'])
     job.status = 'new'
     job.save()
-    context = {}
+    
     context['status'] = True
     context['error_code'] = 0
     context['message'] = "job {} create successfully, all jobs:{}".format(job.job_id, Job.objects.all())

@@ -2,6 +2,7 @@ from django_cron import CronJobBase, Schedule
 from django.core.files import File
 from .spark.spark import *
 from .models import *
+import shlex
 
 class MyCronJob(CronJobBase):
     RUN_EVERY_MINS = 1 # every 2 hours
@@ -9,15 +10,35 @@ class MyCronJob(CronJobBase):
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'services.my_cron_job'    # a unique code
 
+    def getUserName(self, job):
+        #TODO: get username from database with user id
+        return 'root'
+
     def do(self):
         print('cron run')
-        newJobs = Job.objects.filter(status='new')
-        if len(newJobs) == 0:
-            print('no new jobs')
+        new_jobs = Job.objects.filter(status='new')
+        if len(new_jobs) == 0:
             return
-        print('has new job')
-        oneJob = newJobs.first()
-        oneJob.status = 'running'
-        oneJob.save()
-        Spark.submitJob()
+        job = new_jobs.first()
+        job.status = 'running'
+        job.save()
+
+        # TODO: check all the files does exist in HDFS.
+        # TODO: check all the files are accessible by the user.
+
+        try:
+            app_params = []
+            if job.app_params:
+                app_params = shlex.split(job.app_params)
+
+            Spark.submitJob(
+                self.getUserName(job), 
+                job.entry_file,
+                job.libs,
+                job.archives,
+                app_params
+            )
+        except Exception as e:
+            print(e)
+
         return
