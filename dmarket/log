@@ -1,0 +1,47 @@
+Error saving cronjob log message: relation "django_cron_cronjoblog" does not exist
+LINE 1: INSERT INTO "django_cron_cronjoblog" ("code", "start_time", ...
+                    ^
+
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job
+Running cron: MyCronJob code services.my_cron_job

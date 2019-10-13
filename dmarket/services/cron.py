@@ -15,9 +15,12 @@ class MyCronJob(CronJobBase):
         return 'root'
 
     def do(self):
-        print('cron run')
+        log = open('/submit-out', 'a+')
+        log.write('cron run\n')
+
         new_jobs = Job.objects.filter(status='new')
         if len(new_jobs) == 0:
+            log.close()
             return
         job = new_jobs.first()
         job.status = 'running'
@@ -39,6 +42,8 @@ class MyCronJob(CronJobBase):
                 app_params
             )
         except Exception as e:
-            print(e)
+            # log.write('exeption\n')
+            log.write('{}\n'.format(e.message()))
 
+        log.close()
         return

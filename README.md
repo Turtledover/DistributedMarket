@@ -1,13 +1,18 @@
 # DistributedMarket
 A distributed market platform designed for machine learning tasks.
 
-# Run in docker
+# First time setup
 1. Install docker
 2. Clone https://github.com/Turtledover/spark-hadoop-docker to a separate folder
 3. Run `docker-compose up` in docker-spark folder
 4. Ctrl-C to shutdown the docker after it is up
-5. Run `docker-compose up` in root folder of this project
-6. You can now browse 'http://localhost:8080' for spark web UI and 'http://localhost:8000' for Django server
+
+# Start the docker
+1. Run `docker-compose up` in root folder of this project
+2. You can now browse 'http://localhost:8088' for Hadoop UI and 'http://localhost:8000' for Django server
+3. If this is the first time you this docker, you need to run the instruction here
+  1. Connect to the docker with `docker exec -it <container name> /bin/bash`
+  2. Run `python3 /dmarket/manage.py migrate`
 
 # DB model design
 

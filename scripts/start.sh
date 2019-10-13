@@ -4,4 +4,5 @@
 stop-dfs.sh
 start-dfs.sh
 start-yarn.sh
+cron
 python3 /dmarket/manage.py runserver 0.0.0.0:8000

@@ -17,13 +17,22 @@ class Spark:
         :param string archives: comma-seperated list of file to extract to the same directory of the file
         :param list appParams: arguments pass to the entry program
         """
-        print('submitJob')
+
+        logfile = open('/submit-out', 'a+')
+        errorfile = open('/submit-err', 'a+')
+
+        logfile.write('submitJob\n')
 
         # TODO: check file exist
         if not entry:
             return
 
         su = ['su', '-', user, '-c']
+
+        if not 'SPARK_HOME' in os.environ:
+            logfile.write('SPARK_HOME is not found in environment\n')
+            logfile.close()
+            return
 
         command = [
             os.environ['SPARK_HOME'] + '/bin/spark-submit',
@@ -55,9 +64,16 @@ class Spark:
         if appParams:
             command.extend(appParams)
 
-        cmdStr = ' '.join(command)
-        su.append(cmdStr)
-        subprocess.Popen(su)
+        # cmdStr = ' '.join(command)
+        # su.append(cmdStr)
+        # subprocess.Popen(su)
+
+        logfile.write('before subprocess call\n')
+        subprocess.Popen(command)
+        
+        logfile.write('after subprocess call\n')
+        logfile.close()
+        errorfile.close()
 
         return
 

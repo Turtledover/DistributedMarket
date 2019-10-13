@@ -56,7 +56,7 @@ ROOT_URLCONF = 'dmarket.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/dmarket/services/static/templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'services/static/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,7 +135,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/django/log',
+            'filename': '/var/log/django',
             },
         },
     'loggers': {
