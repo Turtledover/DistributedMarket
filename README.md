@@ -12,23 +12,14 @@ A distributed market platform designed for machine learning tasks.
 # DB model design
 
 1. User
-
    - User_id (uuid (random hash 32))
-
    - User_name (str 32 limit)
-
    - Password (hash_code 64)
-
    - Email_address (str)
-
    - Credit (credit instance)
-
 2. Machine
-
   - Machine_id (hash_code)
-
   - Machine_type (enum)
-
   - IP_address (str)
   - Service_port (int)
   - Core_count (int)
@@ -36,22 +27,19 @@ A distributed market platform designed for machine learning tasks.
   - Time_period (int)
   - Availability (enum)
   - User_id (foreign key)
-
 3. Job
-
   - Job_id (hash_code)
-  - Root_path (str)     ----> (code, data(npy), model(saved model))		
+  - entry_file (str)
+  - libs (str)
+  - archives (str)
+  - app_params (str)
   - Core_num (int)
   - Machine_type (enum)
   - Status (enum)
   - User_id (foreign key)
-
 4. Metadata
-
   - Machine_info (dict)
-
 5. Credit
-
   - Sharing_credit
   - Using_credit
   - Rate
