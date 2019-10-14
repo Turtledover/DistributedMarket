@@ -19,6 +19,7 @@ def signup(request):
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
+            initial_credit(user)
             login(request, user)
             return redirect('/')
     else:
@@ -109,11 +110,45 @@ def get_log(request):
 
 ##### Credit API #####
 @login_required
-def get_credit(request):
+def initial_credit(request):
+    credit_info = Credit.objects.all().get(user=request.user)
+    credit_info['sharing_credit'] = 15
+    credit_info['using_credit'] = 0
+    credit_info['rate'] = 0.0
+
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'Get credit API'
+    context['credit_status'] = credit_info
+    context['message'] = 'Initial credit for new Signup user'
 
-    return render(request, 'general_status.json', context, 
+    return render(request, 'credit_status.json', context, 
         content_type='application/json')
+
+@login_required
+def check_credit(request):
+    credit_info = Credit.objects.all().get(user=request.user)   
+    
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['credit_status'] = credit_info
+    context['message'] = 'Get sharing credit info'
+
+    return render(request, 'credit_status.json', context, 
+        content_type='application/json')
+
+# Need to discuss the pass in API of update credit
+# @login_required
+# def update_credit(request):
+#     credit_info = Credit.objects.all().get(user=request.user)   
+    
+#     context = {}
+#     context['status'] = True
+#     context['error_code'] = 0
+#     context['credit_status'] = credit_info['sharing_credit']
+#     context['message'] = 'Get sharing credit info'
+
+#     return render(request, 'credit_status.json', context, 
+#         content_type='application/json')
+
