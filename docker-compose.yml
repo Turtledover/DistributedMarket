@@ -35,6 +35,7 @@ services:
       - ./dmarket:/dmarket
       - ./scripts:/scripts
       - ./sample:/sample
+      - ./scala:/scala
   slave1:
     build: .
     image: centralserver-hadoop
