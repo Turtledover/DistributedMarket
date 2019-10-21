@@ -51,6 +51,8 @@ class Spark:
             '--conf', 'spark.pyspark.python=' + os.environ['PYSPARK_PYTHON'],
             '--conf', 'spark.yarn.appMasterEnv.PYTHONPATH=' + os.environ['PYSPARK_PYTHON'],
             '--conf', 'spark.executorEnv.SPARK_YARN_USER_ENV=' + os.environ['SPARK_YARN_USER_ENV'],
+            '--conf', 'spark.eventLog.enabled=true',
+            '--conf', 'spark.eventLog.dir=hdfs://master:9000/shared/log/'
         ]
         
         if archives:

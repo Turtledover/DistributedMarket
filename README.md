@@ -9,9 +9,7 @@ A distributed market platform designed for machine learning tasks.
 # Start the docker
 1. Run `docker-compose up` in root folder of this project
 2. You can now browse 'http://localhost:8088' for Hadoop UI and 'http://localhost:8000/services/' for Django server
-3. If this is the first time you this docker, you need to run the instruction here
-  1. Connect to the docker with `docker exec -it <container name> /bin/bash`
-  2. Run `python3 /dmarket/manage.py migrate`
+3. You can also browse 'http://localhost:18080/' for spark history server which give you previous job status
 
 # DB model design
 
