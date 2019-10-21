@@ -1,5 +1,7 @@
 FROM hadoop-spark
 
+COPY conf/spark/spark-defaults.conf /usr/local/spark/conf/
+
 RUN pip3 install Django==2.1.* \
     && pip3 install psycopg2-binary \
     && pip3 install django-cron

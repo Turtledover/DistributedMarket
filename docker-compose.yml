@@ -21,6 +21,7 @@ services:
       - 7077
       - 6066
       - 22
+      - 4040
     depends_on:
       - "slave1"
       - "slave2"
@@ -31,6 +32,8 @@ services:
       - 8080:8080
       - 8088:8088
       - 8000:8000
+      - 18080:18080
+      - 4040:4040
     volumes:
       - ./dmarket:/dmarket
       - ./scripts:/scripts
@@ -62,10 +65,12 @@ services:
       - 6066
       - 8042
       - 22
+      - 4040
     ports:
       - 9871:9870
       - 8043:8042
       - 8081:8081
+      - 4041:4040
     volumes:
       - ./scripts:/scripts
   slave2:
@@ -94,10 +99,12 @@ services:
       - 6066
       - 8042
       - 22
+      - 4040
     ports:
       - 9872:9870
       - 8044:8042
       - 8082:8082
+      - 4042:4040
     volumes:
       - ./scripts:/scripts
   db:

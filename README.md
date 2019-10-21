@@ -4,15 +4,12 @@ A distributed market platform designed for machine learning tasks.
 # First time setup
 1. Install docker
 2. Clone https://github.com/Turtledover/spark-hadoop-docker to a separate folder
-3. Run `docker-compose up` in docker-spark folder
-4. Ctrl-C to shutdown the docker after it is up
+3. Run `./build.sh` in docker-spark folder
 
 # Start the docker
 1. Run `docker-compose up` in root folder of this project
-2. You can now browse 'http://localhost:8088' for Hadoop UI and 'http://localhost:8000' for Django server
-3. If this is the first time you this docker, you need to run the instruction here
-  1. Connect to the docker with `docker exec -it <container name> /bin/bash`
-  2. Run `python3 /dmarket/manage.py migrate`
+2. You can now browse 'http://localhost:8088' for Hadoop UI and 'http://localhost:8000/services/' for Django server
+3. You can also browse 'http://localhost:18080/' for spark history server which give you previous job status
 
 # DB model design
 
@@ -23,32 +20,32 @@ A distributed market platform designed for machine learning tasks.
    - Email_address (str)
    - Credit (credit instance)
 2. Machine
-  - Machine_id (hash_code)
-  - Machine_type (enum)
-  - IP_address (str)
-  - Service_port (int)
-  - Core_count (int)
-  - Memory_size (double)
-  - Time_period (int)
-  - Availability (enum)
-  - User_id (foreign key)
+    - Machine_id (hash_code)
+    - Machine_type (enum)
+    - IP_address (str)
+    - Service_port (int)
+    - Core_count (int)
+    - Memory_size (double)
+    - Time_period (int)
+    - Availability (enum)
+    - User_id (foreign key)
 3. Job
-  - Job_id (hash_code)
-  - entry_file (str)
-  - libs (str)
-  - archives (str)
-  - app_params (str)
-  - Core_num (int)
-  - Machine_type (enum)
-  - Status (enum)
-  - User_id (foreign key)
+    - Job_id (hash_code)
+    - entry_file (str)
+    - libs (str)
+    - archives (str)
+    - app_params (str)
+    - Core_num (int)
+    - Machine_type (enum)
+    - Status (enum)
+    - User_id (foreign key)
 4. Metadata
-  - Machine_info (dict)
+    - Machine_info (dict)
 5. Credit
-  - Sharing_credit
-  - Using_credit
-  - Rate
-  - User_id (uuid (random hash 32))
+    - Sharing_credit
+    - Using_credit
+    - Rate
+    - User_id (uuid (random hash 32))
 
 # API stub design
 
