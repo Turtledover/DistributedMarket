@@ -23,27 +23,30 @@ class MyCronJob(CronJobBase):
             log.close()
             return
         job = new_jobs.first()
-        job.status = 'running'
+        job.status = 'pending'
         job.save()
 
         # TODO: check all the files does exist in HDFS.
         # TODO: check all the files are accessible by the user.
 
         try:
-            app_params = []
-            if job.app_params:
-                app_params = shlex.split(job.app_params)
+            # app_params = []
+            # if job.app_params:
+            #     app_params = shlex.split(job.app_params)
 
             Spark.submitJob(
                 self.getUserName(job), 
+                job.job_id,
                 job.entry_file,
                 job.libs,
                 job.archives,
-                app_params
+                job.app_params
             )
         except Exception as e:
-            # log.write('exeption\n')
-            log.write('{}\n'.format(e.message()))
+            log.write('exeption\n')
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            log.write(message)
 
         log.close()
         return
