@@ -11,7 +11,6 @@ urlpatterns = [
     path('job/cancel/', views.cancel_job, name='cancel_job'),
     path('job/get_result/', views.get_result, name='get_result'),
     path('job/get_log/', views.get_log, name='get_log'),
-    path('credit/init/', views.init_credit, name='init_credit'),
     path('credit/check_credit/', views.check_credit, name='check_credit'),
     # path('credit/update_credit/', views.update_credit, name='update_credit'),
 ]

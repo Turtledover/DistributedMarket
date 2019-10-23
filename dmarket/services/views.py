@@ -19,7 +19,9 @@ def signup(request):
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
-            initial_credit(user)
+            success = initial_credit(request)
+            if not success:
+                print("initial failure!")
             login(request, user)
             return redirect('/')
     else:
@@ -109,21 +111,18 @@ def get_log(request):
         content_type='application/json')
 
 ##### Credit API #####
-@login_required
+
 def initial_credit(request):
-    credit_info = Credit.objects.all().get(user=request.user)
-    credit_info['sharing_credit'] = 15
-    credit_info['using_credit'] = 0
-    credit_info['rate'] = 0.0
-
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['credit_status'] = credit_info
-    context['message'] = 'Initial credit for new Signup user'
-
-    return render(request, 'credit_status.json', context, 
-        content_type='application/json')
+    try:
+        credit = Credit()
+        credit.sharing_credit = 15
+        credit.using_credit = 0
+        credit.rate = 0.0
+        credit.user = User.objects.get(id=request.user.id)
+        credit.save()
+    except:
+        return False
+    return True
 
 @login_required
 def check_credit(request):
