@@ -100,6 +100,7 @@ object DMLauncher {
 
                 if(appState == SparkAppHandle.State.SUBMITTED) {
                     db.update_status(jobid, "submitted")
+                    db.update_spark_id(jobid, handle.getAppId)
                 } else if(appState == SparkAppHandle.State.RUNNING) {
                     db.update_status(jobid, "running")
                 } else if(appState == SparkAppHandle.State.FAILED) {

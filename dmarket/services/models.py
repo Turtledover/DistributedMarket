@@ -46,6 +46,7 @@ class Job(models.Model):
     core_num = models.IntegerField()
     machine_type = models.CharField(max_length=40, default='GPU', blank=True)
     status = models.CharField(max_length=40, default='Available', blank=True)
+    spark_id = models.CharField(max_length=64, default='', blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):

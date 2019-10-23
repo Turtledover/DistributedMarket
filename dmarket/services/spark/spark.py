@@ -34,7 +34,7 @@ class Spark:
         command = [
             '/usr/bin/scala',
             '-classpath', os.environ['SPARK_HOME'] + '/jars/spark-launcher_2.11-2.4.4.jar',
-            '/scala/main.scala',
+            '/scala/db/target/scala-2.11/dmlauncher-assembly-1.0.jar',
             '--entry', entry,
             '--jobid', str(jobId)
         ]

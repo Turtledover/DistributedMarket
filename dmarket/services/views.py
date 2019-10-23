@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import * 
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
+
 ##### User API #####
 @login_required
 def index(request):
@@ -103,6 +104,36 @@ def submit_job(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
+@login_required
+def get_job_status(request):
+    context = {}
+    if not 'job_id' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: job_id'
+        return render(request, 'general_status.json', context, 
+            content_type='application/json')
+
+    jobId = request.GET['job_id']
+    jobs = Job.objects.filter(job_id=jobId)
+    if len(jobs) == 0:
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'No such job'
+        return render(request, 'general_status.json', context, 
+            content_type='application/json')
+    
+    job = jobs.first()
+    context['status'] = True
+    context['error_code'] = 0
+    context['result'] = {}
+    context['result']['job_id'] = jobId
+    context['result']['status'] = job.status
+    context['result']['spark_id'] = job.spark_id
+
+    return JsonResponse(context)
+
 @login_required
 def cancel_job(request):
     context = {}
@@ -112,6 +143,7 @@ def cancel_job(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
 @login_required
 def get_result(request):
     context = {}
@@ -121,6 +153,7 @@ def get_result(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
 @login_required
 def get_log(request):
     context = {}
