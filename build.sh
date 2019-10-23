@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose build --force-rm
+docker build -t centralserver-hadoop --rm .
