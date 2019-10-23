@@ -1,0 +1,6 @@
+{
+    "status": {{status}},
+    "error_code": {{error_code}},
+    "credit_status":{{credit_status}},
+    "message": "{{message}}"
+}
