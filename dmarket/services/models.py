@@ -7,9 +7,10 @@ class Credit(models.Model):
     sharing_credit = models.IntegerField()
     using_credit = models.IntegerField()
     rate = models.FloatField(null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+
     def __str__(self):
-        return self.user.id
+        return self.user
 
 class Profile(models.Model):
     # user_id, password, email_address in User
