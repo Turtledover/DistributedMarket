@@ -20,19 +20,22 @@ class Profile(models.Model):
     def __str__(self):
         return self.user
 
+
 class Machine(models.Model):
     machine_id = models.AutoField(primary_key=True)
-    machine_type = models.CharField(max_length=40, default='GPU', blank=True)	
-    ip_address = models.CharField(max_length=64, default='127.0.0.1', blank=True)	
-    service_port = models.CharField(max_length=32, default='8000', blank=True)	
+    hostname = models.CharField(max_length=50, default='', blank=False)
+    machine_type = models.CharField(max_length=40, default='GPU', blank=True)
+    ip_address = models.CharField(max_length=64, default='127.0.0.1', blank=True)
     core_num = models.IntegerField(default=1, blank=True)
     memory_size = models.FloatField(null=True)
     time_period = models.IntegerField(null=True)
     available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    public_key = models.FileField(blank=False)
 
     def __str__(self):
-        return self.machine_id
+        return ', '.join([str(self.machine_id), str(self.ip_address), str(self.core_num), str(self.memory_size),
+                          str(self.time_period), str(self.public_key)])
 
 class Job(models.Model):
     job_id = models.AutoField(primary_key=True)
