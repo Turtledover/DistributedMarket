@@ -38,30 +38,25 @@ class Machine(models.Model):
 class Job(models.Model):
     job_id = models.AutoField(primary_key=True)
     # root_path = models.CharField(max_length=128, default='', blank=True)
+    job_name = models.CharField(max_length=64, default='', blank=True)
+    added_time = models.DateTimeField(auto_now_add=True, blank=True)
+    start_time = models.BigIntegerField(default=0)
+    end_time = models.BigIntegerField(default=0)
+    duration = models.IntegerField(default=0)
+    used_credits = models.IntegerField(default=0)
     libs = models.CharField(max_length=1024, default='', blank=True)
     archives = models.CharField(max_length=1024, default='', blank=True)
     app_params = models.CharField(max_length=1024, default='', blank=True)
     entry_file = models.CharField(max_length=1024, default='')
 
-    core_num = models.IntegerField()
-    machine_type = models.CharField(max_length=40, default='GPU', blank=True)
+    # core_num = models.IntegerField()
+    # machine_type = models.CharField(max_length=40, default='GPU', blank=True)
     status = models.CharField(max_length=40, default='Available', blank=True)
     spark_id = models.CharField(max_length=64, default='', blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return 'job_id:{}, libs:{}, archives:{}, entry_file:{}, app_params:{}, core_num:{}, machine_type:{}, status:{}, user_id:{}'. \
-                format(
-                    self.job_id, 
-                    self.libs, 
-                    self.archives, 
-                    self.entry_file, 
-                    self.app_params, 
-                    self.core_num, 
-                    self.machine_type, 
-                    self.status, 
-                    self.user.id
-                )
+        return self.job_id
 
 
 # class Metadata(models.Model):

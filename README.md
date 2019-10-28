@@ -31,12 +31,16 @@ A distributed market platform designed for machine learning tasks.
     - User_id (foreign key)
 3. Job
     - Job_id (hash_code)
+    - Job_name (str)
+    - Added_time (datetime)
+    - Start_time (big int)
+    - End_time (bit int)
+    - Duration (int)
+    - Used_credit (int)
     - entry_file (str)
     - libs (str)
     - archives (str)
     - app_params (str)
-    - Core_num (int)
-    - Machine_type (enum)
     - Status (enum)
     - User_id (foreign key)
 4. Metadata
@@ -59,3 +63,4 @@ A distributed market platform designed for machine learning tasks.
 8. Get_result (job_id) -> Success (json: {files})
 9. Get_log (job_id) -> Success (json: {files})
 10. get_credits (user_id) -> Success (json: {Sharing_credit, Using_credit, Rate})
+11. get_job_list() -> Success(json)

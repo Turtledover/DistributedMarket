@@ -53,7 +53,7 @@ def remove_machine(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'Remove machine API'
+    context['message'] = 'user: {}'.format(request.user.username)
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
@@ -75,11 +75,9 @@ def submit_job(request):
         context['status'] = False
         context['error_code'] = 1
         context['message'] = 'missing mandatory parameter: entry_file'
-        return render(request, 'general_status.json', context, 
-            content_type='application/json')
+        return JsonResponse(context)
 
     job = Job()
-    # job.root_path = request.GET['root_path']
     
     # TODO: sanitize parameters
     if 'libs' in request.GET:
@@ -90,20 +88,24 @@ def submit_job(request):
     
     if 'app_params' in request.GET:
         job.app_params = request.GET['app_params']
+    
+    if 'name' in request.GET:
+        job.job_name = request.GET['name']
 
     job.entry_file = request.GET['entry_file']
 
-    job.core_num = int(request.GET['core_num'])
     job.user = User.objects.get(id=request.user.id)
     job.status = 'new'
     job.save()
     
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = "job {} create successfully, all jobs:{}".format(job.job_id, Job.objects.all())
+    context['result'] = {
+        'job_id': job.job_id
+    }
+    # context['message'] = 'job {} create successfully'.format(job.job_id)
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+    return JsonResponse(context)
 
 @login_required
 def get_job_status(request):
@@ -112,8 +114,7 @@ def get_job_status(request):
         context['status'] = False
         context['error_code'] = 1
         context['message'] = 'missing mandatory parameter: job_id'
-        return render(request, 'general_status.json', context, 
-            content_type='application/json')
+        return JsonResponse(context)
 
     jobId = request.GET['job_id']
     jobs = Job.objects.filter(job_id=jobId)
@@ -121,17 +122,70 @@ def get_job_status(request):
         context['status'] = False
         context['error_code'] = 2
         context['message'] = 'No such job'
-        return render(request, 'general_status.json', context, 
-            content_type='application/json')
+        return JsonResponse(context)
     
     job = jobs.first()
     context['status'] = True
     context['error_code'] = 0
     context['result'] = {}
     context['result']['job_id'] = jobId
+    context['result']['name'] = job.job_name
     context['result']['status'] = job.status
+    context['result']['used_credits'] = job.used_credits
+    context['result']['duration'] = job.duration
+    context['result']['added'] = job.added_time
     context['result']['spark_id'] = job.spark_id
 
+    return JsonResponse(context)
+
+@login_required
+def get_job_list(request):
+    """
+    Get a list of jobs of the requesting users
+    Sample response:
+    {
+        "status": true,
+        "error_code": 0,
+        "result": {
+            "jobs": [
+                {
+                    "job_id": 1,
+                    "name": "",
+                    "status": "finished",
+                    "used_credits": 45,
+                    "duration": 120000,
+                    "added": "2019-10-28T18:50:54.147Z"
+                },
+                {
+                    "job_id": 6,
+                    "name": "MNIST Training",
+                    "status": "running",
+                    "used_credits": 0,
+                    "duration": 0,
+                    "added": "2019-10-28T19:10:41.184Z"
+                }
+            ]
+        }
+    }
+    """
+    context = {}
+    jobs = Job.objects.filter(user=request.user)
+
+    result = {}
+    result['jobs'] = []
+    for j in jobs:
+        retj = {}
+        retj['job_id'] = j.job_id
+        retj['name'] = j.job_name
+        retj['status'] = j.status
+        retj['used_credits'] = j.used_credits
+        retj['duration'] = j.duration
+        retj['added'] = j.added_time
+        result['jobs'].append(retj)
+
+    context['status'] = True
+    context['error_code'] = 0
+    context['result'] = result
     return JsonResponse(context)
 
 @login_required
