@@ -8,6 +8,7 @@ start-yarn.sh
 if [ ! -f /firstlaunch ]; then
     hdfs dfs -mkdir /shared
     hdfs dfs -mkdir /shared/log
+    python3 /dmarket/manage.py makemigrations --merge
     python3 /dmarket/manage.py migrate
     touch firstlaunch
 fi
