@@ -55,6 +55,14 @@ def remove_machine(request):
     context['error_code'] = 0
     context['message'] = 'user: {}'.format(request.user.username)
 
+    id = request.GET.get('machine_id')
+    machine = Machine.objects.get(machine_id=id)
+    if machine.user != request.user:
+        context['status'] = False
+        context['message'] = 'No permission to remove this machine'
+    else:
+        machine.delete()
+
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 @login_required
@@ -63,6 +71,9 @@ def list_machines(request):
     context['status'] = True
     context['error_code'] = 0
     context['message'] = 'List machine API'
+
+    all_machines = Machine.objects.all()
+    context['list'] = all_machines
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
