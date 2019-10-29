@@ -1,6 +1,7 @@
 from django.db import models
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
+import datetime
 # Create your models here.
 
 class Credit(models.Model):
@@ -28,12 +29,39 @@ class Machine(models.Model):
     service_port = models.CharField(max_length=32, default='8000', blank=True)	
     core_num = models.IntegerField(default=1, blank=True)
     memory_size = models.FloatField(null=True)
+    start_time = models.DateTimeField(default=datetime.datetime.now())
     time_period = models.IntegerField(null=True)
     available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.machine_id
+
+class HistoryMachine(models.Model):
+    history_id = models.AutoField(primary_key=True)
+
+    machine_id = models.IntegerField(default=0)
+    machine_type = models.CharField(max_length=40, default='GPU', blank=True)
+    core_num = models.IntegerField(default=1, blank=True)
+    memory_size = models.FloatField(null=True)
+
+    start_time = models.DateTimeField(auto_now_add=False)
+    end_time = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.history_id
+
+    @classmethod
+    def create(cls, machine):
+        history = cls()
+        history.machine_id = machine.machine_id
+        history.machine_type = machine.machine_type
+        history.memory_size = machine.memory_size
+        history.core_num = machine.core_num
+        history.start_time = machine.start_time
+        history.end_time = datetime.datetime.now()
+
+        return history
 
 class Job(models.Model):
     job_id = models.AutoField(primary_key=True)
