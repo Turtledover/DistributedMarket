@@ -67,6 +67,15 @@ def remove_machine(request):
         context['status'] = False
         context['message'] = 'No permission to remove this machine'
     else:
+        machine_info = {
+            'machine_type': machine.machine_type,
+            'num_of_cores': machine.core_num,
+            'memory': machine.memory_size,
+            'start_time': machine.start_time
+        }
+        update_sharing(request.user, machine_info)
+        history = HistoryMachine.create(machine)
+        history.save()
         machine.delete()
 
     return render(request, 'general_status.json', context, 
@@ -78,11 +87,24 @@ def list_machines(request):
     context['error_code'] = 0
     context['message'] = 'List machine API'
 
-    all_machines = Machine.objects.all()
-    context['list'] = all_machines
+    current_user_machines = Machine.objects.filter(user=request.user)
+    context['list'] = current_user_machines
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
+@login_required
+def get_machine_contribution_history(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['message'] = 'get machine contribution history API'
+
+    current_user_history = HistoryMachine.objects.filter(user=request.user)
+    context['list'] = current_user_history
+
+    return render(request, 'general_status.json', context,
+                  content_type='application/json')
 
 ##### Job API #####
 @login_required
