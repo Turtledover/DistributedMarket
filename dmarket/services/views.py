@@ -8,6 +8,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from .cron import *
 from .spark.spark import *
+from .credit.credit_core import CreditCore
+import datetime
 
 ##### User API #####
 @login_required
@@ -22,7 +24,8 @@ def signup(request):
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
-            success = initial_credit(request)
+            creditCore = CreditCore()
+            success = creditCore.initial_credit(user)
             if not success:
                 print("initial failure!")
             login(request, user)
@@ -83,7 +86,13 @@ def list_machines(request):
 ##### Job API #####
 @login_required
 def submit_job(request):
-    context = {}
+    context = {}        
+    if not CreditCore.isSufficient(request):
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'no enough credit to submit a new job'
+        return JsonResponse(context)
+
     if not 'entry_file' in request.GET:
         context['status'] = False
         context['error_code'] = 1
@@ -272,41 +281,49 @@ def get_log(request):
 
 ##### Credit API #####
 
-def initial_credit(request):
-    try:
-        credit = Credit()
-        credit.sharing_credit = 15
-        credit.using_credit = 0
-        credit.rate = 0.0
-        credit.user = User.objects.get(id=request.user.id)
-        credit.save()
-    except:
-        return False
-    return True
-
 @login_required
 def check_credit(request):
-    credit_info = Credit.objects.all().get(user=request.user)   
+    user = request.user
     
+    credit = Credit.objects.get(user=request.user)
+    
+    jobs = Job.objects.filter(user=request.user)  
+
+    job_list = []
+    for job in jobs:
+        job_dict = {}
+        if job.status is not 'running':
+            continue;
+        for machine in job:
+            job_dict[machine_type] = 1
+            job_dict[num_of_cores] = 1
+            job_dict[duration] = job.duration
+            job_list.append(job_dict)
+    using_credit = CreditCore.update_usings(user, job_list, real_update=False)
+
+    machine_list = []
+    machines = Machine.objects.filter(user=request.user)
+
+    for machine in machines:
+        machine_dict = {}   
+        machine_dict[machine_type] = machine.machine_type
+        machine_dict[num_of_cores] = machine.core_num
+        machine_dict[duration] = int(datetime.datetime.now().strftime("%s")) * 1000 - machine.start_time
+        machine_list.append(machine_dict)
+    sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
+    
+    credit.using_credit += using_credit
+    credit.sharing_credit += sharing_credit
+
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['credit_status'] = credit_info
-    context['message'] = 'Get sharing credit info'
+    # context['credit'] = credit
+    context['using_credit'] = credit.using_credit
+    context['sharing_credit'] = credit.sharing_credit   
+    context['rate'] = credit.rate   
+    context['message'] = 'Get credit info'
 
     return render(request, 'credit_status.json', context, 
         content_type='application/json')
 
-# Need to discuss the pass in API of update credit
-# @login_required
-# def update_credit(request):
-#     credit_info = Credit.objects.all().get(user=request.user)   
-    
-#     context = {}
-#     context['status'] = True
-#     context['error_code'] = 0
-#     context['credit_status'] = credit_info['sharing_credit']
-#     context['message'] = 'Get sharing credit info'
-
-#     return render(request, 'credit_status.json', context, 
-#         content_type='application/json')
