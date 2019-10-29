@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
+from .cron import *
 
 ##### User API #####
 @login_required
@@ -88,6 +89,9 @@ def submit_job(request):
         context['message'] = 'missing mandatory parameter: entry_file'
         return JsonResponse(context)
 
+    user = User.objects.get(id=request.user.id)
+    # TODO: call credit is_sufficient_credit function
+
     job = Job()
     
     # TODO: sanitize parameters
@@ -105,7 +109,7 @@ def submit_job(request):
 
     job.entry_file = request.GET['entry_file']
 
-    job.user = User.objects.get(id=request.user.id)
+    job.user = user
     job.status = 'new'
     job.save()
     
@@ -269,4 +273,3 @@ def check_credit(request):
 
 #     return render(request, 'credit_status.json', context, 
 #         content_type='application/json')
-

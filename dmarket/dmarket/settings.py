@@ -131,7 +131,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CRON_CLASSES = [
-    'services.cron.MyCronJob',
+    'services.cron.SubmitJobCron',
+    'services.cron.ScanFinishedJobCron'
 ]
 
 LOGGING = {
