@@ -132,7 +132,7 @@ STATIC_URL = '/static/'
 
 CRON_CLASSES = [
     'services.cron.SubmitJobCron',
-    'services.cron.ScanFinishedJobCron'
+    # 'services.cron.ScanFinishedJobCron'
 ]
 
 LOGGING = {

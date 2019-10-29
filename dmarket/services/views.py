@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from .cron import *
 from .spark.spark import *
 from .credit.credit_core import CreditCore
+from .jobhelper import *
 import datetime
 import sys
 
@@ -351,6 +352,30 @@ def check_credit(request):
 
 def jobtest(request):
     print('jobtest', file=sys.stderr)
+    context = {}
+    if not 'job_id' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: job_id'
+        return JsonResponse(context)
+
+    job_id = request.GET['job_id']
+    job_set = Job.objects.filter(job_id=job_id)
+    if len(job_set) == 0:
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'No such job ' + job_id
+        return JsonResponse(context)
+
+    job = job_set.first()
+    usages = get_job_machines_usage(job)
+
+    context['status'] = True
+    context['error_code'] = 0
+    context['result'] = usages
+    return JsonResponse(context)
+
+def completetest(request):
     scan = ScanFinishedJobCron()
     scan.do()
     return JsonResponse({})
