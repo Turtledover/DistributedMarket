@@ -7,6 +7,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from .cron import *
+from .spark.spark import *
 
 ##### User API #####
 @login_required
@@ -226,12 +227,48 @@ def get_result(request):
 @login_required
 def get_log(request):
     context = {}
+    if not 'job_id' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: job_id'
+        return JsonResponse(context)
+
+    jobId = request.GET['job_id']
+    job_set = Job.objects.filter(job_id=jobId)
+    if len(job_set) == 0:
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'No such job ' + jobId
+        return JsonResponse(context)
+    
+    job = job_set.first()
+    if not job.spark_id:
+        context['status'] = True
+        context['error_code'] = 0
+        context['result'] = {}
+        return JsonResponse(context)
+    
+    alllogs = []
+    app = Spark.get_spark_app(job.spark_id)
+    if app is None:
+        context['status'] = True
+        context['error_code'] = 0
+        context['result'] = {}
+        return JsonResponse(context)
+
+    # TODO: parse the logs from HTML
+    for a in app['attempts']:
+        att_id = a['attemptId']
+        logslist = Spark.get_attempts_executors_log(job.spark_id, att_id)
+        alllogs.append(logslist)
+
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'Get log API'
+    context['result'] = {
+        'logs': alllogs
+    }
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+    return JsonResponse(context)
 
 ##### Credit API #####
 

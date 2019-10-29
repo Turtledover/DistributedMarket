@@ -74,9 +74,18 @@ class ScanFinishedJobCron(CronJobBase):
             print('app is None', file=sys.stderr)
             return
 
+        start_time = 0
+        end_time = 0
         executors = {}
         for a in app['attempts']:
             att_id = a['attemptId']
+
+            if start_time == 0 or a['startTimeEpoch'] < start_time:
+                start_time = a['startTimeEpoch']
+
+            if end_time == 0 or a['endTimeEpoch'] > end_time:
+                end_time = a['endTimeEpoch']
+
             execs = self.get_attempt_executors(spark_id, att_id)
             if execs is None:
                 continue
@@ -107,6 +116,8 @@ class ScanFinishedJobCron(CronJobBase):
         # TODO: change to actual credit function
         used_credit = self.update_using(job.user, info)
 
+        job.start_time = start_time
+        job.end_time = end_time
         job.used_credits = used_credit
         job.status = 'completed'
         job.save()
@@ -148,7 +159,6 @@ class ScanFinishedJobCron(CronJobBase):
 
         return None
         
-
     def get_spark_app(self, spark_id):
         url = ScanFinishedJobCron.spark_status_url + spark_id
         try:
