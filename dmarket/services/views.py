@@ -317,11 +317,8 @@ def check_credit(request):
         job_dict = {}
         if job.status is not 'running':
             continue
-        for machine in job:
-            job_dict[machine_type] = 1
-            job_dict[num_of_cores] = 1
-            job_dict[duration] = job.duration
-            job_list.append(job_dict)
+        executors = get_job_machines_usage(job)
+        job_list.append(executors)
     using_credit = CreditCore.update_usings(user, job_list, real_update=False)
 
     machine_list = []

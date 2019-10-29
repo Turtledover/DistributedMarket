@@ -32,14 +32,13 @@ class CreditCore:
 
 
 	@staticmethod
-	def update_using(user, job, real_update=False):
+	def update_using(user, executors, real_update=False):
 		credit = Credit.objects.get(user=user)
 		new_using_credit = 0
-		machines = job['machines']
-		for machine in machines:
-			machine_type = machine['type']
-			num_of_cores = machine['cores']
-			duration = machine['duration'] / 1000 / 3600
+		for e in executors:
+			machine_type = executors[e]['type']
+			num_of_cores = executors[e]['usage']['cores']
+			duration = executors[e]['usage']['duration'] / 1000 / 3600
 			new_using_credit += float(machine_type) * float(num_of_cores) * duration
 		if real_update:
 			credit.using_credit += new_using_credit
@@ -57,9 +56,9 @@ class CreditCore:
 	@staticmethod
 	def update_sharing(user, machine, real_update=False):
 		credit = Credit.objects.get(user=request.user)
-		machine_type = machine[machine_type]
-		num_of_cores = machine[num_of_cores]
-		duration = machine[duration] / 1000 / 3600
+		machine_type = machine['type']
+		num_of_cores = machine['cores']
+		duration = machine['duration'] / 1000 / 3600
 		new_sharing_credit = machine_type * num_of_cores * duration
 		if real_update:
 			cridet.sharing_credit += new_sharing_credit
