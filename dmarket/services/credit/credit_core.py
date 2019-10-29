@@ -1,6 +1,6 @@
-
 from ..models import * 
 from django.contrib.auth.models import User
+import sys
 
 class CreditCore:
 
@@ -33,13 +33,14 @@ class CreditCore:
 
 	@staticmethod
 	def update_using(user, job, real_update=False):
-		credit = Credit.objects.get(user=request.user)
+		credit = Credit.objects.get(user=user)
 		new_using_credit = 0
-		for machine in job:
-			machine_type = machine[machine_type]
-			num_of_cores = machine[num_of_cores]
-			duration = machine[duration] / 1000 / 3600
-			new_using_credit += machine_type * num_of_cores * duration
+		machines = job['machines']
+		for machine in machines:
+			machine_type = machine['type']
+			num_of_cores = machine['cores']
+			duration = machine['duration'] / 1000 / 3600
+			new_using_credit += float(machine_type) * float(num_of_cores) * duration
 		if real_update:
 			credit.using_credit += new_using_credit
 			credit.save()

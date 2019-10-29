@@ -10,6 +10,7 @@ from .cron import *
 from .spark.spark import *
 from .credit.credit_core import CreditCore
 import datetime
+import sys
 
 ##### User API #####
 @login_required
@@ -90,7 +91,7 @@ def submit_job(request):
     if not CreditCore.isSufficient(request):
         context['status'] = False
         context['error_code'] = 2
-        context['message'] = 'no enough credit to submit a new job'
+        context['message'] = 'not enough credit to submit a new job'
         return JsonResponse(context)
 
     if not 'entry_file' in request.GET:
@@ -100,7 +101,6 @@ def submit_job(request):
         return JsonResponse(context)
 
     user = User.objects.get(id=request.user.id)
-    # TODO: call credit is_sufficient_credit function
 
     job = Job()
     
@@ -293,7 +293,7 @@ def check_credit(request):
     for job in jobs:
         job_dict = {}
         if job.status is not 'running':
-            continue;
+            continue
         for machine in job:
             job_dict[machine_type] = 1
             job_dict[num_of_cores] = 1
@@ -327,3 +327,8 @@ def check_credit(request):
     return render(request, 'credit_status.json', context, 
         content_type='application/json')
 
+def jobtest(request):
+    print('jobtest', file=sys.stderr)
+    scan = ScanFinishedJobCron()
+    scan.do()
+    return JsonResponse({})

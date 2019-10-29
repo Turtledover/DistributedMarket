@@ -5,6 +5,7 @@ from .spark.spark import *
 from .models import *
 import requests
 import sys
+from .credit.credit_core import CreditCore
 
 class SubmitJobCron(CronJobBase):
     RUN_EVERY_MINS = 1
@@ -114,8 +115,8 @@ class ScanFinishedJobCron(CronJobBase):
         info = {}
         info['machines'] = macslist
         # TODO: change to actual credit function
-        used_credit = self.update_using(job.user, info)
-
+        used_credit = CreditCore.update_using(job.user, info, True)
+        print('used_credit=' + str(used_credit), file=sys.stderr)
         job.start_time = start_time
         job.end_time = end_time
         job.used_credits = used_credit

@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 class Credit(models.Model):
-    sharing_credit = models.IntegerField()
-    using_credit = models.IntegerField()
+    sharing_credit = models.FloatField()
+    using_credit = models.FloatField()
     rate = models.FloatField(null=True)
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
 
@@ -43,7 +43,7 @@ class Job(models.Model):
     start_time = models.BigIntegerField(default=0)
     end_time = models.BigIntegerField(default=0)
     duration = models.IntegerField(default=0)
-    used_credits = models.IntegerField(default=0)
+    used_credits = models.FloatField(default=0)
     libs = models.CharField(max_length=1024, default='', blank=True)
     archives = models.CharField(max_length=1024, default='', blank=True)
     app_params = models.CharField(max_length=1024, default='', blank=True)

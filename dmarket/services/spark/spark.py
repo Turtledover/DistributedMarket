@@ -78,6 +78,10 @@ class Spark:
         
         return None
 
+    # @staticmethod
+    # def parse_hadoop_log(url):
+    #     url
+
     @staticmethod
     def submitJob(user, jobId, entry, libs, archives, appParams):
         """
@@ -203,26 +207,6 @@ class Spark:
     #     errorfile.close()
 
     #     return
-    
-    # @staticmethod
-    # def jobExit(proc):
-    #     print('Job Completed.')
-
-    # def runInThread(onExit):
-    #     proc = subprocess.Popen(
-    #         [
-    #             '/usr/spark-2.4.1/bin/spark-submit',
-    #             '/usr/spark-2.4.1/examples/src/main/python/pi.py',
-    #             '10' 
-    #         ]
-    #     )
-    #     proc.wait()
-    #     onExit(proc)
-    #     return
-    # thread = threading.Thread(target=runInThread,
-    #                         args=(Spark.jobExit,))
-    # thread.start()
-    # return
 
 if __name__ == '__main__':
     Spark.submitJob(
