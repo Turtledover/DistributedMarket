@@ -15,6 +15,10 @@ A distributed market platform designed for machine learning tasks.
 
 # NOTICE for testing in Docker environments (qilian branch)
 * In docker environments, the initial cluster only contains 1 master node, which serves as both the datanode and namenode in Hadoop, and both the slave node and master node in Spark. You can then add the user machine to the cluster one by one.
+* After the initial master has been launched and the desktop app has been installed:
+  1. The user who install this app should register an admin account.
+  2. After the admin account has been created, the initial master should be automatically added to the machine table.
+  3. Then other users can add their machines.
 * First cd to the root directory of this repo, and start a container by running the command `docker run -v <absolute_path_to_scripts_directory>:/scripts -it ubuntu /bin/bash`. 
 * Before the user machine is added, make sure you run the command `docker network connect distributedmarket_static-network <container_id>` so that the user machine can access other docker containers.
 * Install the python package in the new ubuntu container: `apt update && apt install python3-pip -y`.

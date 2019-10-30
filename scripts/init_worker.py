@@ -18,7 +18,7 @@ def basic_env_setup():
         ['pip3', 'install', 'psutil', 'requests'],
     ]
     for command in commands:
-        subprocess.Popen(command)
+        subprocess.Popen(command).wait()
 
 
 def cluster_setup():
@@ -56,7 +56,7 @@ def cluster_setup():
         ['yarn', '--daemon', 'start', 'nodemanager'],
     ]
     for command in commands:
-        subprocess.Popen(command)
+        subprocess.Popen(command).wait()
 
 
 def config_yarn_resources(memory_limit, cpu_cores_limit):
@@ -86,7 +86,7 @@ def config_yarn_resources(memory_limit, cpu_cores_limit):
     # end
 
 
-def register_machine(core_num, memory_size, time_period, public_key_path, authorized_key_path, target_hostname=None):
+def register_machine(core_num, memory_size, time_period, public_key_path, authorized_key_path):
     """
     Register the user machine on the existing cluster.
     :param core_num:
@@ -136,8 +136,6 @@ def register_machine(core_num, memory_size, time_period, public_key_path, author
         'time_period': time_period,
         # 'csrftoken': csrf_token,
     }
-    if target_hostname:
-        data['hostname'] = target_hostname
     response = client.post(url, data=data, files=files, headers=dict(Referer=url))
     public_keys = response.json()['public_keys']
     with open(authorized_key_path, 'a') as f:
@@ -155,8 +153,8 @@ if __name__ == '__main__':
     core_num = 1
     memory_size = 1024
     # [TBD] Regular user should first register a user account on our app before register their machine
-    basic_env_setup()
-    register_machine(core_num, memory_size, 10, '/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
+    # basic_env_setup()
+    # register_machine(core_num, memory_size, 10, '/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
     cluster_setup()
     config_yarn_resources(core_num, memory_size)
 

@@ -6,3 +6,4 @@ start-dfs.sh
 start-yarn.sh
 cron
 python3 /dmarket/manage.py runserver 0.0.0.0:8000
+python3 /scripts/init_cluster.py
