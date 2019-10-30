@@ -151,7 +151,6 @@ def submit_job(request):
     context['result'] = {
         'job_id': job.job_id
     }
-    # context['message'] = 'job {} create successfully'.format(job.job_id)
 
     return JsonResponse(context)
 
@@ -184,13 +183,6 @@ def get_job_status(request):
         'added': job.added_time,
         'spark_id': job.spark_id
     }
-    # context['result']['job_id'] = jobId
-    # context['result']['name'] = job.job_name
-    # context['result']['status'] = job.status
-    # context['result']['used_credits'] = job.used_credits
-    # context['result']['duration'] = job.duration
-    # context['result']['added'] = job.added_time
-    # context['result']['spark_id'] = job.spark_id
 
     return JsonResponse(context)
 
@@ -405,12 +397,13 @@ def check_credit(request):
     context['error_code'] = 0
     # context['credit'] = credit
     context['using_credit'] = credit.using_credit
-    context['sharing_credit'] = credit.sharing_credit   
-    context['rate'] = credit.rate   
+    context['sharing_credit'] = credit.sharing_credit
+    context['rate'] = credit.rate
     context['message'] = 'Get credit info'
 
-    return render(request, 'credit_status.json', context, 
-        content_type='application/json')
+    return JsonResponse(context)
+    # return render(request, 'credit_status.json', context, 
+    #     content_type='application/json')
 
 def jobtest(request):
     print('jobtest', file=sys.stderr)
