@@ -326,9 +326,9 @@ def check_credit(request):
 
     for machine in machines:
         machine_dict = {}   
-        machine_dict[machine_type] = machine.machine_type
-        machine_dict[num_of_cores] = machine.core_num
-        machine_dict[duration] = int(datetime.datetime.now().strftime("%s")) * 1000 - machine.start_time
+        machine_dict['type'] = machine.machine_type
+        machine_dict['cores'] = machine.core_num
+        machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) * 1000 - machine.start_time
         machine_list.append(machine_dict)
     sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
     
