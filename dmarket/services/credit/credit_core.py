@@ -49,17 +49,17 @@ class CreditCore:
 	def update_sharings(user, machines, real_update=False):
 		new_sharing_credit = 0
 		for machine in machines:
-			new_sharing_credit += update_sharing(user, machine, real_update=False)
+			new_sharing_credit += CreditCore.update_sharing(user, machine, real_update=False)
 		return new_sharing_credit
 
 
 	@staticmethod
 	def update_sharing(user, machine, real_update=False):
-		credit = Credit.objects.get(user=request.user)
+		credit = Credit.objects.get(user=user)
 		machine_type = machine['type']
 		num_of_cores = machine['cores']
 		duration = machine['duration'] / 1000 / 3600
-		new_sharing_credit = machine_type * num_of_cores * duration
+		new_sharing_credit = float(machine_type) * float(num_of_cores) * duration
 		if real_update:
 			cridet.sharing_credit += new_sharing_credit
 			credit.save()

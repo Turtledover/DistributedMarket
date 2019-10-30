@@ -6,38 +6,6 @@ import requests
 
 class Spark:
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
-
-    # @staticmethod
-    # def get_attempt_executors(spark_id, att_id):
-    #     url = Spark.spark_status_url + spark_id + '/' + att_id + '/executors'
-
-    #     try:
-    #         res = requests.get(url)
-    #         if res.status_code == 200:
-    #             print('status is 200', file=sys.stderr)
-    #             execs = {}
-    #             executors = res.json()
-    #             print(executors, file=sys.stderr)
-    #             for e in executors:
-    #                 if e['id'] == 'driver':
-    #                     continue
-                    
-    #                 host = e['hostPort'].split(':')[0]
-    #                 if not host in execs:
-    #                     execs[host] = []
-                    
-    #                 execs[host].append({
-    #                     'cores': e['totalCores'],
-    #                     'memory': e['maxMemory'],
-    #                     'duration': e['totalDuration']
-    #                 })
-    #             return execs
-            
-    #     except Exception as e:
-    #         print('get_attempt_executors exception', file=sys.stderr)
-    #         print(e, file=sys.stderr)
-
-    #     return None
     
     @staticmethod
     def get_attempts_executors_log(spark_id, att_id):
@@ -109,10 +77,6 @@ class Spark:
             print(e, file=sys.stderr)
 
         return None
-
-    # @staticmethod
-    # def parse_hadoop_log(url):
-    #     url
 
     @staticmethod
     def submitJob(user, jobId, entry, libs, archives, appParams):

@@ -288,11 +288,26 @@ def get_log(request):
         context['result'] = {}
         return JsonResponse(context)
 
-    # TODO: parse the logs from HTML
     for a in app['attempts']:
         att_id = a['attemptId']
         logslist = Spark.get_attempts_executors_log(job.spark_id, att_id)
-        alllogs.append(logslist)
+
+        execs = []
+        for l in logslist:
+            out = get_hadoop_log(l['logs']['stdout'])
+            err = get_hadoop_log(l['logs']['stderr'])
+            exe = {
+                'isDriver': l['id'] =='driver',
+                'stdout': out,
+                'stderr': err
+            }
+            execs.append(exe)
+        
+        item = {
+            'attempt': att_id,
+            'executors': execs
+        }
+        alllogs.append(item)
 
     context['status'] = True
     context['error_code'] = 0
@@ -328,7 +343,7 @@ def check_credit(request):
         machine_dict = {}   
         machine_dict['type'] = machine.machine_type
         machine_dict['cores'] = machine.core_num
-        machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) * 1000 - machine.start_time
+        machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
         machine_list.append(machine_dict)
     sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
     
@@ -376,3 +391,11 @@ def completetest(request):
     scan = ScanFinishedJobCron()
     scan.do()
     return JsonResponse({})
+
+def logtest(request):
+    url = 'http://slave1:8042/node/containerlogs/container_1572410700786_0001_01_000001/root/stderr?start=-4096'
+    data = get_hadoop_log(url)
+
+    context = {}
+    context['data'] = data
+    return JsonResponse(context)

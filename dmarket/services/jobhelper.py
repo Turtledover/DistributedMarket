@@ -1,6 +1,8 @@
 from .spark.spark import *
 from django.db.models import Q
 from .models import Machine
+from html.parser import HTMLParser
+import sys
 
 def get_job_machines_usage(job):
     """
@@ -34,37 +36,6 @@ def get_job_machines_usage(job):
 
     app = Spark.get_spark_app(spark_id)
     return get_spark_app_machine_usage(spark_id, app)
-    
-    # print(app, file=sys.stderr)
-    # if app is None or not 'attempts' in app:
-    #     print('app is None', file=sys.stderr)
-    #     return None
-
-    # executors = {}
-    # for a in app['attempts']:
-    #     att_id = a['attemptId']
-    #     execs = Spark.get_attempt_executors_list(spark_id, att_id)
-    #     if execs is None:
-    #         continue
-        
-    #     for e in execs:
-    #         if not e in executors:
-    #             executors[e] = {}
-    #         executors[e]['usage'] = execs[e]['usage']
-
-    # if len(executors) == 0:
-    #     return None
-
-    # qObjs = Q()
-    # for host in executors:
-    #     qObjs |= Q(ip_address=host)
-
-    # machs = Machine.objects.filter(qObjs)
-    # for m in machs:
-    #     executors[m.ip_address]['type'] = m.machine_type
-    #     executors[m.ip_address]['id'] = m.machine_id
-    
-    # return executors
 
 def get_spark_app_machine_usage(spark_id, app):
     print(app, file=sys.stderr)
@@ -97,3 +68,35 @@ def get_spark_app_machine_usage(spark_id, app):
         executors[m.ip_address]['id'] = m.machine_id
     
     return executors
+
+class LogParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.isStart = False
+        self.isDone = False
+        self.data = ''
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'pre':
+            self.isStart = True
+
+    def handle_endtag(self, tag):
+        if self.isStart and tag == 'pre':
+            self.isDone = True
+
+    def handle_data(self, data):
+        if self.isStart and not self.isDone:
+            self.data += data
+
+def get_hadoop_log(url):
+    url = url.split('?')[0]
+    url += '?start=0'
+
+    res = requests.get(url)
+    if res.status_code == 200:
+        parser = LogParser()
+        parser.feed(res.content.decode("utf-8"))
+        print(parser.data, file=sys.stderr)
+        return parser.data
+    
+    return ''
