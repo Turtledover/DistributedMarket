@@ -51,10 +51,10 @@ class SubmitJobCron(CronJobBase):
         log.close()
         return
 
-class ScanFinishedJobCron:
-    # RUN_EVERY_MINS = 1
-    # schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    # code = 'services.scan_finished_job_cron' # a unique code
+class ScanFinishedJobCron(CronJobBase):
+    RUN_EVERY_MINS = 1
+    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
+    code = 'services.scan_finished_job_cron' # a unique code
 
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
 
@@ -116,19 +116,19 @@ class ScanFinishedJobCron:
         machines = get_spark_app_machine_usage(spark_id, app)
 
         # Convert the format to credit system format.
-        macslist = []
-        for m in machines:
-            for u in machines[m]['usage']:
-                macslist.append({
-                    'cores': u['cores'],
-                    'memory': u['memory'],
-                    'duration': u['duration'],
-                    'type': machines[m]['type']
-                })
+        # macslist = []
+        # for m in machines:
+        #     for u in machines[m]['usage']:
+        #         macslist.append({
+        #             'cores': u['cores'],
+        #             'memory': u['memory'],
+        #             'duration': u['duration'],
+        #             'type': machines[m]['type']
+        #         })
         
-        info = {}
-        info['machines'] = macslist
-        used_credit = CreditCore.update_using(job.user, info, True)
+        # info = {}
+        # info['machines'] = macslist
+        used_credit = CreditCore.update_using(job.user, machines, True)
         print('used_credit=' + str(used_credit), file=sys.stderr)
         job.start_time = start_time
         job.end_time = end_time

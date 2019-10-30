@@ -175,14 +175,22 @@ def get_job_status(request):
     job = jobs.first()
     context['status'] = True
     context['error_code'] = 0
-    context['result'] = {}
-    context['result']['job_id'] = jobId
-    context['result']['name'] = job.job_name
-    context['result']['status'] = job.status
-    context['result']['used_credits'] = job.used_credits
-    context['result']['duration'] = job.duration
-    context['result']['added'] = job.added_time
-    context['result']['spark_id'] = job.spark_id
+    context['result'] = {
+        'job_id': jobId,
+        'name': job.job_name,
+        'status': job.status,
+        'used_credits': job.used_credits,
+        'duration': job.duration,
+        'added': job.added_time,
+        'spark_id': job.spark_id
+    }
+    # context['result']['job_id'] = jobId
+    # context['result']['name'] = job.job_name
+    # context['result']['status'] = job.status
+    # context['result']['used_credits'] = job.used_credits
+    # context['result']['duration'] = job.duration
+    # context['result']['added'] = job.added_time
+    # context['result']['spark_id'] = job.spark_id
 
     return JsonResponse(context)
 
@@ -258,6 +266,48 @@ def get_result(request):
 
 @login_required
 def get_log(request):
+    """
+    Get logs, both stdout and stderr, of a job
+    Sample response:
+    {
+        "status": true,
+        "error_code": 0,
+        "result": {
+            "logs": [
+                {
+                    "attempt": 1,
+                    "executors": [
+                        {
+                            "isDriver": true,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        },
+                        {
+                            "isDriver": false,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        }
+                    ]
+                },
+                {
+                    "attempt": 2,
+                    "executors": [
+                        {
+                            "isDriver": true,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        },
+                        {
+                            "isDriver": false,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    """
     context = {}
     if not 'job_id' in request.GET:
         context['status'] = False

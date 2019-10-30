@@ -37,9 +37,12 @@ class CreditCore:
 		new_using_credit = 0
 		for e in executors:
 			machine_type = executors[e]['type']
-			num_of_cores = executors[e]['usage']['cores']
-			duration = executors[e]['usage']['duration'] / 1000 / 3600
-			new_using_credit += float(machine_type) * float(num_of_cores) * duration
+			for u in executors[e]['usage']:
+				if u['isDriver']:
+					continue
+				num_of_cores = u['cores']
+				duration = u['duration'] / 1000 / 3600
+				new_using_credit += float(machine_type) * float(num_of_cores) * duration
 		if real_update:
 			credit.using_credit += new_using_credit
 			credit.save()
