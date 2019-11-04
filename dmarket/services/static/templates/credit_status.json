@@ -1,0 +1,8 @@
+{
+    "status": {{status}},
+    "error_code": {{error_code}},
+    "sharing_credit":{{sharing_credit}},
+    "using_credit":{{using_credit}},
+    "rate":{{rate}},
+    "message": "{{message}}"
+}

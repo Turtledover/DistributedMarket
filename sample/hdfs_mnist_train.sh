@@ -15,6 +15,8 @@
 --conf spark.pyspark.python=$PYSPARK_PYTHON \
 --conf spark.yarn.appMasterEnv.PYTHONPATH=$PYSPARK_PYTHON \
 --conf spark.executorEnv.SPARK_YARN_USER_ENV=$SPARK_YARN_USER_ENV \
+--conf spark.eventLog.enabled=true \
+--conf spark.eventLog.dir=hdfs://master:9000/shared/log/ \
 hdfs:///user/root/mnist/input/code/spark/mnist_spark.py \
 --images mnist/output/train/images \
 --labels mnist/output/train/labels \

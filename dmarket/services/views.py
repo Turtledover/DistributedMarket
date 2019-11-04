@@ -1,37 +1,52 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import * 
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, redirect
+from .cron import *
+from .spark.spark import *
+from .credit.credit_core import CreditCore
+from .jobhelper import *
+import datetime
+import sys
+
 ##### User API #####
-
+@login_required
 def index(request):
-    return HttpResponse("Hello, world. Distributed Market.")
-    
-def register(request):
-    username = request.GET['username']
-    email = request.GET['email']
-    password = request.GET['password']
-    user = User.objects.create_user(username, email, password)
-    user.save()
+    return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
+# https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            creditCore = CreditCore()
+            success = creditCore.initial_credit(user)
+            if not success:
+                print("initial failure!")
+            login(request, user)
+            return redirect('/')
+    else:
+        form = UserCreationForm()
+    return render(request, 'signup.html', {'form': form})
 
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = User.objects.all()
+# def login(request):
+#     context = {}
+#     context['status'] = True
+#     context['error_code'] = 0
+#     context['message'] = 'User login API'
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
-
-def login(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'User login API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+#     return render(request, 'general_status.json', context, 
+#         content_type='application/json')
 
 ##### Machine API #####
+@login_required
 def submit_machine(request):
     context = {}
     context['status'] = True
@@ -40,37 +55,77 @@ def submit_machine(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def remove_machine(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'Remove machine API'
+    context['message'] = 'user: {}'.format(request.user.username)
+
+    id = request.GET.get('machine_id')
+    machine = Machine.objects.get(machine_id=id)
+    if machine.user != request.user:
+        context['status'] = False
+        context['message'] = 'No permission to remove this machine'
+    else:
+        machine_info = {
+            'machine_type': machine.machine_type,
+            'num_of_cores': machine.core_num,
+            'memory': machine.memory_size,
+            'start_time': machine.start_time
+        }
+        update_sharing(request.user, machine_info)
+        history = HistoryMachine.create(machine)
+        history.save()
+        machine.delete()
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
+@login_required
 def list_machines(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
     context['message'] = 'List machine API'
 
+    current_user_machines = Machine.objects.filter(user=request.user)
+    context['list'] = current_user_machines
+
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
-##### Job API #####
-def submit_job(request):
+@login_required
+def get_machine_contribution_history(request):
     context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['message'] = 'get machine contribution history API'
+
+    current_user_history = HistoryMachine.objects.filter(user=request.user)
+    context['list'] = current_user_history
+
+    return render(request, 'general_status.json', context,
+                  content_type='application/json')
+
+##### Job API #####
+@login_required
+def submit_job(request):
+    context = {}        
+    if not CreditCore.isSufficient(request):
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'not enough credit to submit a new job'
+        return JsonResponse(context)
+
     if not 'entry_file' in request.GET:
         context['status'] = False
         context['error_code'] = 1
         context['message'] = 'missing mandatory parameter: entry_file'
-        return render(request, 'general_status.json', context, 
-            content_type='application/json')
+        return JsonResponse(context)
+
+    user = User.objects.get(id=request.user.id)
 
     job = Job()
-    # job.root_path = request.GET['root_path']
     
     # TODO: sanitize parameters
     if 'libs' in request.GET:
@@ -81,21 +136,107 @@ def submit_job(request):
     
     if 'app_params' in request.GET:
         job.app_params = request.GET['app_params']
+    
+    if 'name' in request.GET:
+        job.job_name = request.GET['name']
 
     job.entry_file = request.GET['entry_file']
 
-    job.core_num = int(request.GET['core_num'])
-    job.user = User.objects.get(id=request.GET['id'])
+    job.user = user
     job.status = 'new'
     job.save()
     
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = "job {} create successfully, all jobs:{}".format(job.job_id, Job.objects.all())
+    context['result'] = {
+        'job_id': job.job_id
+    }
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+    return JsonResponse(context)
 
+@login_required
+def get_job_status(request):
+    context = {}
+    if not 'job_id' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: job_id'
+        return JsonResponse(context)
+
+    jobId = request.GET['job_id']
+    jobs = Job.objects.filter(job_id=jobId)
+    if len(jobs) == 0:
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'No such job'
+        return JsonResponse(context)
+    
+    job = jobs.first()
+    context['status'] = True
+    context['error_code'] = 0
+    context['result'] = {
+        'job_id': jobId,
+        'name': job.job_name,
+        'status': job.status,
+        'used_credits': job.used_credits,
+        'duration': job.duration,
+        'added': job.added_time,
+        'spark_id': job.spark_id
+    }
+
+    return JsonResponse(context)
+
+@login_required
+def get_job_list(request):
+    """
+    Get a list of jobs of the requesting users
+    Sample response:
+    {
+        "status": true,
+        "error_code": 0,
+        "result": {
+            "jobs": [
+                {
+                    "job_id": 1,
+                    "name": "",
+                    "status": "finished",
+                    "used_credits": 45,
+                    "duration": 120000,
+                    "added": "2019-10-28T18:50:54.147Z"
+                },
+                {
+                    "job_id": 6,
+                    "name": "MNIST Training",
+                    "status": "running",
+                    "used_credits": 0,
+                    "duration": 0,
+                    "added": "2019-10-28T19:10:41.184Z"
+                }
+            ]
+        }
+    }
+    """
+    context = {}
+    jobs = Job.objects.filter(user=request.user)
+
+    result = {}
+    result['jobs'] = []
+    for j in jobs:
+        retj = {}
+        retj['job_id'] = j.job_id
+        retj['name'] = j.job_name
+        retj['status'] = j.status
+        retj['used_credits'] = j.used_credits
+        retj['duration'] = j.duration
+        retj['added'] = j.added_time
+        result['jobs'].append(retj)
+
+    context['status'] = True
+    context['error_code'] = 0
+    context['result'] = result
+    return JsonResponse(context)
+
+@login_required
 def cancel_job(request):
     context = {}
     context['status'] = True
@@ -105,6 +246,7 @@ def cancel_job(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
+@login_required
 def get_result(request):
     context = {}
     context['status'] = True
@@ -114,21 +256,189 @@ def get_result(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
+@login_required
 def get_log(request):
+    """
+    Get logs, both stdout and stderr, of a job
+    Sample response:
+    {
+        "status": true,
+        "error_code": 0,
+        "result": {
+            "logs": [
+                {
+                    "attempt": 1,
+                    "executors": [
+                        {
+                            "isDriver": true,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        },
+                        {
+                            "isDriver": false,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        }
+                    ]
+                },
+                {
+                    "attempt": 2,
+                    "executors": [
+                        {
+                            "isDriver": true,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        },
+                        {
+                            "isDriver": false,
+                            "stdout": "logloglogloglog",
+                            "stderr": "loglogloglog"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    """
     context = {}
+    if not 'job_id' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: job_id'
+        return JsonResponse(context)
+
+    jobId = request.GET['job_id']
+    job_set = Job.objects.filter(job_id=jobId)
+    if len(job_set) == 0:
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'No such job ' + jobId
+        return JsonResponse(context)
+    
+    job = job_set.first()
+    if not job.spark_id:
+        context['status'] = True
+        context['error_code'] = 0
+        context['result'] = {}
+        return JsonResponse(context)
+    
+    alllogs = []
+    app = Spark.get_spark_app(job.spark_id)
+    if app is None:
+        context['status'] = True
+        context['error_code'] = 0
+        context['result'] = {}
+        return JsonResponse(context)
+
+    for a in app['attempts']:
+        att_id = a['attemptId']
+        logslist = Spark.get_attempts_executors_log(job.spark_id, att_id)
+
+        execs = []
+        for l in logslist:
+            out = get_hadoop_log(l['logs']['stdout'])
+            err = get_hadoop_log(l['logs']['stderr'])
+            exe = {
+                'isDriver': l['id'] =='driver',
+                'stdout': out,
+                'stderr': err
+            }
+            execs.append(exe)
+        
+        item = {
+            'attempt': att_id,
+            'executors': execs
+        }
+        alllogs.append(item)
+
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'Get log API'
+    context['result'] = {
+        'logs': alllogs
+    }
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+    return JsonResponse(context)
 
 ##### Credit API #####
-def get_credit(request):
+
+@login_required
+def check_credit(request):
+    user = request.user
+    
+    credit = Credit.objects.get(user=request.user)
+    
+    jobs = Job.objects.filter(user=request.user)  
+
+    job_list = []
+    for job in jobs:
+        job_dict = {}
+        if job.status is not 'running':
+            continue
+        executors = get_job_machines_usage(job)
+        job_list.append(executors)
+    using_credit = CreditCore.update_usings(user, job_list, real_update=False)
+
+    machine_list = []
+    machines = Machine.objects.filter(user=request.user)
+
+    for machine in machines:
+        machine_dict = {}   
+        machine_dict['type'] = machine.machine_type
+        machine_dict['cores'] = machine.core_num
+        machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
+        machine_list.append(machine_dict)
+    sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
+    
+    credit.using_credit += using_credit
+    credit.sharing_credit += sharing_credit
+
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'Get credit API'
+    # context['credit'] = credit
+    context['using_credit'] = credit.using_credit
+    context['sharing_credit'] = credit.sharing_credit
+    context['rate'] = credit.rate
+    context['message'] = 'Get credit info'
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+    return JsonResponse(context)
+    # return render(request, 'credit_status.json', context, 
+    #     content_type='application/json')
+
+def jobtest(request):
+    print('jobtest', file=sys.stderr)
+    context = {}
+    if not 'job_id' in request.GET:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'missing mandatory parameter: job_id'
+        return JsonResponse(context)
+
+    job_id = request.GET['job_id']
+    job_set = Job.objects.filter(job_id=job_id)
+    if len(job_set) == 0:
+        context['status'] = False
+        context['error_code'] = 2
+        context['message'] = 'No such job ' + job_id
+        return JsonResponse(context)
+
+    job = job_set.first()
+    usages = get_job_machines_usage(job)
+
+    context['status'] = True
+    context['error_code'] = 0
+    context['result'] = usages
+    return JsonResponse(context)
+
+def completetest(request):
+    scan = ScanFinishedJobCron()
+    scan.do()
+    return JsonResponse({})
+
+def logtest(request):
+    url = 'http://slave1:8042/node/containerlogs/container_1572410700786_0001_01_000001/root/stderr?start=-4096'
+    data = get_hadoop_log(url)
+
+    context = {}
+    context['data'] = data
+    return JsonResponse(context)

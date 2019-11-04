@@ -127,3 +127,4 @@ dmypy.json
 # Application specific
 .DS_Store
 sample/mnist
+.idea/
