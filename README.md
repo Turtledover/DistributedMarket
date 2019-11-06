@@ -22,6 +22,8 @@ A distributed market platform designed for machine learning tasks.
 * First cd to the root directory of this repo, and start a container by running the command `docker run -v <absolute_path_to_scripts_directory>:/scripts -it ubuntu /bin/bash`. 
 * Before the user machine is added, make sure you run the command `docker network connect distributedmarket_static-network <container_id>` so that the user machine can access other docker containers.
 * Install the python package in the new ubuntu container: `apt update && apt install python3-pip -y`.
+* Manually run the `init_cluster.py` script to add the master node to the database.
+* [TBD] The first connection with master node required yes/no.
 
 # DB model design
 1. User
