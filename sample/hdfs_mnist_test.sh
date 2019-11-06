@@ -9,6 +9,8 @@ ${SPARK_HOME}/bin/spark-submit \
 --conf spark.yarn.maxAppAttempts=1 \
 --conf spark.executorEnv.LD_LIBRARY_PATH=$LIB_JVM:$LIB_HDFS \
 --conf spark.executorEnv.CLASSPATH=$(hadoop classpath --glob) \
+--conf spark.eventLog.enabled=true \
+--conf spark.eventLog.dir=hdfs://master:9000/shared/log/ \
 hdfs:///user/root/mnist/input/code/spark/mnist_spark.py \
 --images mnist/output/test/images \
 --labels mnist/output/test/labels \

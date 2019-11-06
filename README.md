@@ -9,9 +9,17 @@ A distributed market platform designed for machine learning tasks.
 # Start the docker
 1. Run `docker-compose up` in root folder of this project
 2. You can now browse 'http://localhost:8088' for Hadoop UI and 'http://localhost:8000/services/' for Django server
-3. If this is the first time you this docker, you need to run the instruction here
-  1. Connect to the docker with `docker exec -it <container name> /bin/bash`
-  2. Run `python3 /dmarket/manage.py migrate`
+3. You can also browse 'http://localhost:18080/' for spark history server which give you previous job status
+
+# Run a job
+Currently, the system assume code and data of a job located in HDFS. <br/>
+All code and data has to be uploaded to HDFS first before it could be run. <br/>
+Run the Sample MNIST Job: <br/>
+1. Connect to docker with: `docker exec -it  distributedmarket_master_1 /bin/bash`
+2. `cd sample`
+3. `./hdfs_copy.sh`
+4. Submit MNIST data convert job with API: http://127.0.0.1:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
+5. Use job list API to get the job status: http://127.0.0.1:8000/services/job/list/
 
 # NOTICE for testing in Docker environments (qilian branch)
 * In docker environments, the initial cluster only contains 1 master node, which serves as both the datanode and namenode in Hadoop, and both the slave node and master node in Spark. You can then add the user machine to the cluster one by one.
@@ -44,12 +52,16 @@ A distributed market platform designed for machine learning tasks.
     - User_id (foreign key)
 3. Job
     - Job_id (hash_code)
+    - Job_name (str)
+    - Added_time (datetime)
+    - Start_time (big int)
+    - End_time (bit int)
+    - Duration (int)
+    - Used_credit (int)
     - entry_file (str)
     - libs (str)
     - archives (str)
     - app_params (str)
-    - Core_num (int)
-    - Machine_type (enum)
     - Status (enum)
     - User_id (foreign key)
 4. Metadata
@@ -72,3 +84,4 @@ A distributed market platform designed for machine learning tasks.
 8. Get_result (job_id) -> Success (json: {files})
 9. Get_log (job_id) -> Success (json: {files})
 10. get_credits (user_id) -> Success (json: {Sharing_credit, Using_credit, Rate})
+11. get_job_list() -> Success(json)
