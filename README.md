@@ -21,8 +21,21 @@ Run the Sample MNIST Job: <br/>
 4. Submit MNIST data convert job with API: http://127.0.0.1:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
 5. Use job list API to get the job status: http://127.0.0.1:8000/services/job/list/
 
-# DB model design
+# NOTICE for testing in Docker environments (qilian branch)
+* In docker environments, the initial cluster only contains 1 master node, which serves as both the datanode and namenode in Hadoop, and both the slave node and master node in Spark. You can then add the user machine to the cluster one by one.
+* After the initial master has been launched and the desktop app has been installed:
+  1. The user who install this app should register an admin account.
+  2. After the admin account has been created, the initial master should be automatically added to the machine table.
+  3. Then other users can add their machines.
+* First cd to the root directory of this repo, and start a container by running the command `docker run -v <absolute_path_to_scripts_directory>:/scripts -it ubuntu /bin/bash`. 
+* Before the user machine is added, make sure you run the command `docker network connect distributedmarket_static-network <container_id>` so that the user machine can access other docker containers.
+* Install the python package in the new ubuntu container: `apt update && apt install python3-pip -y`.
+* Manually run the `init_cluster.py` script to add the master node to the database.
+* [TBD] The first connection with master node required yes/no. (current config is not very secure)
+- [TBD] The subprocess.Popen() based ssh session may fail randomly.
+- [TBD] If the python script works well with the desktop app, add the argument list to the python script.
 
+# DB model design
 1. User
    - User_id (uuid (random hash 32))
    - User_name (str 32 limit)
