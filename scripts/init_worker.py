@@ -34,6 +34,7 @@ def cluster_setup():
     ]
     for command in scp_commands:
         subprocess.Popen(command).wait()
+
     print("[INFO] finish scp")
 
     envs = {
@@ -59,6 +60,14 @@ def cluster_setup():
     envs['CLASSPATH'] = os.environ['CLASSPATH']
     print("[INFO] finish python env setup")
     print(os.environ)
+
+    rm_commands = [
+        ['rm', '-rf', os.path.join(os.environ['HADOOP_HOME'], 'data/dataNode/')],
+        ['rm', '-rf', os.path.join(os.environ['HADOOP_HOME'], 'logs')],
+    ]
+    for rm_command in rm_commands:
+        subprocess.Popen(rm_command).wait()
+    print("[INFO] finish remove the logs and old dataNode directory")
 
     with open('/root/.bashrc', 'a') as f:
         for key in envs:
