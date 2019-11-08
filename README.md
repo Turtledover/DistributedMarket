@@ -87,3 +87,13 @@ Run the Sample MNIST Job: <br/>
 9. Get_log (job_id) -> Success (json: {files})
 10. get_credits (user_id) -> Success (json: {Sharing_credit, Using_credit, Rate})
 11. get_job_list() -> Success(json)
+
+
+
+
+
+
+
+* Integrate the machine API into the desktop app (hard-coded version without UI). => I am testing it for different scenarios. => have some bugs which do not exist if I run the program outside the jar package.
+  * Solve the env variables issues.
+* Machine part demo => time consuming => Record a demo video sometime this week and send it on Slack.

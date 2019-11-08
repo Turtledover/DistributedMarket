@@ -69,7 +69,6 @@ def login(request):
 ##### Machine API #####
 @csrf_exempt
 def init_cluster(request):
-    print("hahaha===>")
     # [TBD] Register an admin user
     # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
     # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django

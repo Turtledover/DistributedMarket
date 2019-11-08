@@ -1,5 +1,6 @@
 from django.db import models
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.contrib.auth.models import User
 import datetime
 # Create your models here.
@@ -25,15 +26,13 @@ class Profile(models.Model):
 
 class Machine(models.Model):
     machine_id = models.AutoField(primary_key=True)
-    machine_type = models.CharField(max_length=40, default='1', blank=True)	
-    ip_address = models.CharField(max_length=64, default='127.0.0.1', blank=True)	
     service_port = models.CharField(max_length=32, default='8000', blank=True)	
     hostname = models.CharField(max_length=50, default='', blank=False)
     machine_type = models.CharField(max_length=40, default='GPU', blank=True)
     ip_address = models.CharField(max_length=64, default='127.0.0.1', blank=True)
     core_num = models.IntegerField(default=1, blank=True)
     memory_size = models.FloatField(null=True)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(default=timezone.now())
     time_period = models.IntegerField(null=True)
     available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
