@@ -56,14 +56,14 @@ def signup(request):
         content_type='application/json')
 
 
-def login(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'User login API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+# def login(request):
+#     context = {}
+#     context['status'] = True
+#     context['error_code'] = 0
+#     context['message'] = 'User login API'
+#
+#     return render(request, 'general_status.json', context,
+#         content_type='application/json')
 
 
 ##### Machine API #####
