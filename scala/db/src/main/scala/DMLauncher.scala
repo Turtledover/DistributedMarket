@@ -50,8 +50,6 @@ object DMLauncher {
             .setMaster("yarn")
             .setDeployMode("cluster")
             .addSparkArg("--queue", "default")
-            .addSparkArg("--num-executors", "2")
-            .addSparkArg("--executor-memory", "2G")
             .setConf("spark.eventLog.enabled", "true")
             .setConf("spark.eventLog.dir", "hdfs://master:9000/shared/log/")
             .setConf("spark.dynamicAllocation.enabled", "false")

@@ -177,8 +177,8 @@ def register_machine(core_num, memory_size, time_period, public_key_path, author
 
 
 if __name__ == '__main__':
-    core_num = 4
-    memory_size = 7168
+    core_num = 2
+    memory_size = 2048
     # [TBD] Regular user should first register a user account on our app before register their machine
     basic_env_setup()
     register_machine(core_num, memory_size, 10, '/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
