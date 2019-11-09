@@ -103,7 +103,7 @@ def init_cluster(request):
     # end
 
 
-@csrf_exempt
+@login_required
 def submit_machine(request):
     if request.method == "GET":
         return HttpResponse('Bad Request!')
@@ -111,20 +111,13 @@ def submit_machine(request):
     # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
     # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
     # begin
-    existing_users = User.objects.filter(username='tmp')
-    if not existing_users:
-        tmp_user = User.objects.create_user('tmp', 'tmp@tmp.com', 'tmp')
-        tmp_user.save()
-    else:
-        tmp_user = existing_users[0]
-
     data = request.POST
     public_keys = []
     host_ip_mapping = {}
     if not Machine.objects.filter(ip_address=data['ip_address']):
         new_machine = Machine(ip_address=data['ip_address'], core_num=data['core_num'],
                               memory_size=data['memory_size'], time_period=data['time_period'],
-                              user=tmp_user)
+                              user=request.user)
         new_machine.public_key = request.FILES['public_key']
         new_machine.save()
         new_machine.hostname = 'slave{0}'.format(new_machine.machine_id)

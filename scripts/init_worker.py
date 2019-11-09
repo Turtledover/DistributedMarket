@@ -1,6 +1,7 @@
 import os
 import socket
 import subprocess
+import argparse
 import xml.etree.ElementTree as ET
 
 
@@ -114,7 +115,7 @@ def config_yarn_resources(cpu_cores_limit, memory_limit):
     # end
 
 
-def register_machine(core_num, memory_size, time_period, public_key_path, authorized_key_path):
+def register_machine(core_num, memory_size, time_period, public_key_path, authorized_key_path, session_id, csrf_token):
     """
     Register the user machine on the existing cluster.
     :param core_num:
@@ -134,7 +135,7 @@ def register_machine(core_num, memory_size, time_period, public_key_path, author
 
     core_limit = os.cpu_count()
     assert core_num <= core_limit
-    memory_limit = psutil.virtual_memory().total    # in Bytes
+    memory_limit = psutil.virtual_memory().total  # in Bytes
     assert memory_size <= memory_limit
 
     # TBD: There should be a user assigned to these three initial machines.
@@ -177,11 +178,19 @@ def register_machine(core_num, memory_size, time_period, public_key_path, author
 
 
 if __name__ == '__main__':
-    core_num = 4
-    memory_size = 7168
-    # [TBD] Regular user should first register a user account on our app before register their machine
-    basic_env_setup()
-    register_machine(core_num, memory_size, 10, '/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
-    cluster_setup()
-    config_yarn_resources(core_num, memory_size)
+    parser = argparse.ArgumentParser(description='Initialize the worker server.')
+    parser.add_argument('--cpu-cores', type=int, help='The number of cpu cores to be contributed to the cluster.',
+                        required=True)
+    parser.add_argument('--memory-size', type=int, help='The memory size to be contributed to the cluster.',
+                        required=True)
+    parser.add_argument('--session-id', type=str, help='The id of the current user session.',
+                        required=True)
+    parser.add_argument('--csrf-token', type=str, help='The csrf_token for the purpose of security.',
+                        required=True)
+    args = vars(parser.parse_args())
 
+    basic_env_setup()
+    register_machine(args['cpu_cores'], args['memory_size'], 10, '/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys',
+                     args['session_id'], args['csrf_token'])
+    cluster_setup()
+    config_yarn_resources(args['cpu_cores'], args['memory_size'])
