@@ -60,12 +60,12 @@ def get_spark_app_machine_usage(spark_id, app):
 
     qObjs = Q()
     for host in executors:
-        qObjs |= Q(ip_address=host)
+        qObjs |= Q(hostname=host)
 
     machs = Machine.objects.filter(qObjs)
     for m in machs:
-        executors[m.ip_address]['type'] = m.machine_type
-        executors[m.ip_address]['id'] = m.machine_id
+        executors[m.hostname]['type'] = m.machine_type
+        executors[m.hostname]['id'] = m.machine_id
     
     return executors
 
