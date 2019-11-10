@@ -54,6 +54,8 @@ def get_spark_app_machine_usage(spark_id, app):
             if not e in executors:
                 executors[e] = {}
             executors[e]['usage'] = execs[e]['usage']
+            executors[e]['type'] = '1'
+            executors[e]['id'] = 0
 
     if len(executors) == 0:
         return None
@@ -66,7 +68,7 @@ def get_spark_app_machine_usage(spark_id, app):
     for m in machs:
         executors[m.hostname]['type'] = m.machine_type
         executors[m.hostname]['id'] = m.machine_id
-    
+
     return executors
 
 class LogParser(HTMLParser):

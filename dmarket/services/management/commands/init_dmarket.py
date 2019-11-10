@@ -21,7 +21,7 @@ class Command(BaseCommand):
             self.stdout.write('admin user exist, nothing to do.')
             return
         
-        if len(Machine.objects.filter(hostname='master1')) > 0:
+        if len(Machine.objects.filter(hostname=Constants.MASTER_HOST)) > 0:
             # Could not happen
             raise
         
@@ -44,7 +44,7 @@ class Command(BaseCommand):
         # https://stackoverflow.com/questions/22102999/get-total-physical-memory-in-python/28161352
         # https://www.geeksforgeeks.org/display-hostname-ip-address-python/
         # begin
-        if len(Machine.objects.filter(hostname='master1')) > 0:
+        if len(Machine.objects.filter(hostname=Constants.MASTER_HOST)) > 0:
             # Could not happen
             raise
 
@@ -57,5 +57,5 @@ class Command(BaseCommand):
         public_key.name = Constants.MASTER_PUBKEY_PATH
         master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
                         time_period=Constants.MASTER_AVAILABLE_TIME, user=adminUser,
-                        public_key=public_key, hostname='master1')
+                        public_key=public_key, hostname=Constants.MASTER_HOST)
         master.save()
