@@ -31,9 +31,7 @@ Run the Sample MNIST Job: <br/>
 * Before the user machine is added, make sure you run the command `docker network connect distributedmarket_static-network <container_id>` so that the user machine can access other docker containers.
 * Install the python package in the new ubuntu container: `apt update && apt install python3-pip -y`.
 * Manually run the `init_worker.py` script to add user machine to the cluster.
-* [TBD] The first connection with master node required yes/no. (current config is not very secure)
 - [TBD] The subprocess.Popen() based ssh session may fail randomly.
-- [TBD] If the python script works well with the desktop app, add the argument list to the python script.
 
 # DB model design
 1. User
@@ -87,13 +85,3 @@ Run the Sample MNIST Job: <br/>
 9. Get_log (job_id) -> Success (json: {files})
 10. get_credits (user_id) -> Success (json: {Sharing_credit, Using_credit, Rate})
 11. get_job_list() -> Success(json)
-
-
-
-
-
-
-
-* Integrate the machine API into the desktop app (hard-coded version without UI). => I am testing it for different scenarios. => have some bugs which do not exist if I run the program outside the jar package.
-  * Solve the env variables issues.
-* Machine part demo => time consuming => Record a demo video sometime this week and send it on Slack.
