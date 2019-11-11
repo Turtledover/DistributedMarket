@@ -28,7 +28,7 @@ class Machine(models.Model):
     machine_id = models.AutoField(primary_key=True)
     service_port = models.CharField(max_length=32, default='8000', blank=True)	
     hostname = models.CharField(max_length=50, default='', blank=False)
-    machine_type = models.CharField(max_length=40, default='GPU', blank=True)
+    machine_type = models.CharField(max_length=40, default='1', blank=True)
     ip_address = models.CharField(max_length=64, default='127.0.0.1', blank=True)
     core_num = models.IntegerField(default=1, blank=True)
     memory_size = models.FloatField(null=True)
