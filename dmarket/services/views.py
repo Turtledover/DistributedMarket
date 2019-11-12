@@ -156,20 +156,29 @@ def submit_machine(request):
                          'host_ip_mapping': host_ip_mapping}, safe=False)
 
 
+@login_required
 def remove_machine(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'user: {}'.format(request.user.username)
+    context['message'] = 'user: {0}'.format(request.user.username)
 
-    id = request.GET.get('machine_id')
-    machine = Machine.objects.get(machine_id=id)
+    machines = Machine.objects.filter(machine_id=int(request.POST.get('machine_id')))
+    if not machines:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'The requested machine does not exist.'
+        return render(request, 'general_status.json', context,
+                      content_type='application/json')
+
+    machine = machines[0]
     if machine.user != request.user:
         context['status'] = False
-        context['message'] = 'No permission to remove this machine'
+        context['error_code'] = 1
+        context['message'] = 'No permission to remove this machine.'
     else:
         MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.REMOVE)
-
+        # TODO Remove the public key and hostname-ip map of the old machine from each machine in the existing cluster
         machine_info = {
             'type': machine.machine_type,
             'cores': machine.core_num,
@@ -177,6 +186,7 @@ def remove_machine(request):
         }
         CreditCore.update_sharing(request.user, machine_info)
         history = HistoryMachine.create(machine)
+        history.user = request.user
         history.save()
         machine.delete()
 
