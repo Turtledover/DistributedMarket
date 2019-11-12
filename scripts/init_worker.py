@@ -14,7 +14,7 @@ def basic_env_setup():
         ['apt-get', 'update'],
         ['apt-get', '-y', 'dist-upgrade'],
         ['apt-get', 'install', 'openjdk-8-jdk', 'openssh-server', 'openssh-client', 'python3-pip', 'zip', '-y'],
-        # [TBD] Check if keys have already existed:
+        # TODO Check if keys have already existed:
         ['ssh-keygen', '-t', 'rsa', '-N', '', '-f', '/root/.ssh/id_rsa'],
         ['service', 'ssh', 'start'],
         ['pip3', 'install', 'psutil', 'requests'],
@@ -90,7 +90,7 @@ def config_yarn_resources(cpu_cores_limit, memory_limit):
     yarn_config_path = os.path.join(os.environ['HADOOP_CONF_DIR'], 'yarn-site.xml')
     yarn_config = ET.parse(yarn_config_path)
     root = yarn_config.getroot()
-    # [TBD] Check if the memory & cpu limit values have already existed
+    # TODO Check if the memory & cpu limit values have already existed
     memory_config = ET.Element('property')
     memory_config_name = ET.SubElement(memory_config, 'name')
     memory_config_name.text = 'yarn.nodemanager.resource.memory-mb'
@@ -154,7 +154,7 @@ def register_machine(core_num, memory_size, time_period, public_key_path, author
     files = {
         'public_key': open(public_key_path, 'r')
     }
-    # [TBD] Get the real ip address (Docker version different from the real machine)
+    # TODO Get the real ip address (Docker version different from the real machine)
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
     data = {

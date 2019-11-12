@@ -69,7 +69,7 @@ def signup(request):
 ##### Machine API #####
 @csrf_exempt
 def init_cluster(request):
-    # [TBD] Register an admin user
+    # TODO Register an admin user
     # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
     # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
     # begin
@@ -91,7 +91,7 @@ def init_cluster(request):
 
     core_num = os.cpu_count()
     memory_size = psutil.virtual_memory().total
-    # [TBD] Get the real ip address
+    # TODO Get the real ip address
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
     public_key = File(open(Constants.MASTER_PUBKEY_PATH))
@@ -122,7 +122,7 @@ def submit_machine(request):
         new_machine.save()
         new_machine.hostname = 'slave{0}'.format(new_machine.machine_id)
         new_machine.save()
-        MachineLib.add_new_machine(new_machine.hostname)
+        MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
 
         # Add the public key to the authorized keys of the master node
         with open('/root/.ssh/authorized_keys', 'a') as f:
@@ -168,7 +168,7 @@ def remove_machine(request):
         context['status'] = False
         context['message'] = 'No permission to remove this machine'
     else:
-        MachineLib.remove_machine(machine.hostname)
+        MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.REMOVE)
 
         machine_info = {
             'type': machine.machine_type,
@@ -182,6 +182,8 @@ def remove_machine(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
+
 @login_required
 def list_machines(request):
     context = {}
@@ -195,6 +197,7 @@ def list_machines(request):
     return render(request, 'general_status.json', context,
         content_type='application/json')
 
+
 @login_required
 def get_machine_contribution_history(request):
     context = {}
@@ -207,6 +210,7 @@ def get_machine_contribution_history(request):
 
     return render(request, 'general_status.json', context,
                   content_type='application/json')
+
 
 ##### Job API #####
 @login_required

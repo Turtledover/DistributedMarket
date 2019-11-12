@@ -50,7 +50,7 @@ class Command(BaseCommand):
 
         core_num = os.cpu_count()
         memory_size = psutil.virtual_memory().total
-        # [TBD] Get the real ip address
+        # TODO Get the real ip address
         hostname = socket.gethostname()
         ip_address = socket.gethostbyname(hostname)
         public_key = File(open(os.path.join(settings.MEDIA_ROOT, Constants.MASTER_PUBKEY_PATH)))
