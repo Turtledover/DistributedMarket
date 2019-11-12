@@ -64,7 +64,7 @@ class CreditCore:
 		duration = machine['duration'] / 3600
 		new_sharing_credit = float(machine_type) * float(num_of_cores) * duration
 		if real_update:
-			cridet.sharing_credit += new_sharing_credit
+			credit.sharing_credit += new_sharing_credit
 			credit.save()
 		return new_sharing_credit
 
