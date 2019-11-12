@@ -199,14 +199,27 @@ def list_machines(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'List machine API'
+    # context['message'] = 'List machine API'
 
     current_user_machines = Machine.objects.filter(user=request.user)
-    context['list'] = current_user_machines
+    # context['list'] = current_user_machines
 
-    return render(request, 'general_status.json', context,
-        content_type='application/json')
-
+    mlist = []
+    for m in current_user_machines:
+        mObj = {}
+        mObj['id'] = m.machine_id
+        mObj['hostname'] = m.hostname
+        mObj['type'] = m.machine_type
+        mObj['core_num'] = m.core_num
+        mObj['memory'] = m.memory_size
+        mObj['starttime'] = m.start_time
+        mlist.append(mObj)
+    
+    context['result'] = {
+        'machines': mlist
+    }
+    
+    return  JsonResponse(context)
 
 @login_required
 def get_machine_contribution_history(request):
