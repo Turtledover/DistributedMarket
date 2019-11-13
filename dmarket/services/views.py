@@ -182,7 +182,7 @@ def remove_machine(request):
         machine_info = {
             'type': machine.machine_type,
             'cores': machine.core_num,
-            'duration': int(datetime.datetime.now().strftime("%s")) * 1000 - (int)(machine.start_time.strftime("%s"))
+            'duration': int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
         }
         CreditCore.update_sharing(request.user, machine_info, True)
         history = HistoryMachine.create(machine)
