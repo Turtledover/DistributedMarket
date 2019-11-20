@@ -114,6 +114,7 @@ def submit_machine(request):
     data = request.POST
     public_keys = []
     host_ip_mapping = {}
+    premium_rate = 1 
     if not Machine.objects.filter(ip_address=data['ip_address']):
         new_machine = Machine(ip_address=data['ip_address'], core_num=data['core_num'],
                               memory_size=data['memory_size'], time_period=data['time_period'],
@@ -121,6 +122,9 @@ def submit_machine(request):
         new_machine.public_key = request.FILES['public_key']
         new_machine.save()
         new_machine.hostname = 'slave{0}'.format(new_machine.machine_id)
+        new_machine.save()
+        premium_rate = CreditCore.get_price(request)
+        new_machine.premium_rate = premium_rate
         new_machine.save()
         MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
 
@@ -153,7 +157,8 @@ def submit_machine(request):
 
     # end
     return JsonResponse({'public_keys': public_keys,
-                         'host_ip_mapping': host_ip_mapping}, safe=False)
+                         'host_ip_mapping': host_ip_mapping,
+                         'premium_rate': format(job.premium_rate, '.0%')}, safe=False)
 
 
 @login_required
@@ -182,6 +187,8 @@ def remove_machine(request):
         machine_info = {
             'type': machine.machine_type,
             'cores': machine.core_num,
+            #credit by lyulinag
+            'memory': machine.memory_size,
             'duration': int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
         }
         CreditCore.update_sharing(request.user, machine_info, True)
@@ -273,12 +280,14 @@ def submit_job(request):
 
     job.user = user
     job.status = 'new'
+    job.premium_rate = CreditCore.get_price(request)
     job.save()
     
     context['status'] = True
     context['error_code'] = 0
     context['result'] = {
-        'job_id': job.job_id
+        'job_id': job.job_id,
+        'premium_rate': format(job.premium_rate, '.0%')
     }
 
     return JsonResponse(context)
@@ -491,6 +500,15 @@ def get_log(request):
 ##### Credit API #####
 
 @login_required
+def get_price(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    res = format(CreditCore.get_price(request), '.0%') 
+    context['premium_rate'] = res
+    return JsonResponse(context)
+
+@login_required
 def check_credit(request):
     user = request.user
 
@@ -498,25 +516,30 @@ def check_credit(request):
 
     jobs = Job.objects.filter(user=request.user)
 
-    job_list = []
+    machiine_list = []
+    using_credit = 0
     for job in jobs:
         job_dict = {}
         if job.status is not 'running':
             continue
         executors = get_job_machines_usage(job)
-        job_list.append(executors)
-    using_credit = CreditCore.update_usings(user, job_list, real_update=False)
+        machiine_list.append(executors)
+        using_credit += CreditCore.update_using(user, machiine_list, job, real_update=False)
 
     machine_list = []
     machines = Machine.objects.filter(user=request.user)
-
-    for machine in machines:
-        machine_dict = {}
-        machine_dict['type'] = machine.machine_type
-        machine_dict['cores'] = machine.core_num
-        machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
-        machine_list.append(machine_dict)
-    sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
+    if machines.exists():
+        for machine in machines:
+            machine_dict = {}
+            machine_dict['type'] = machine.machine_type
+            machine_dict['cores'] = machine.core_num
+            machine_dict['memory'] = machine.memory_size
+            machine_dict['premium_rate'] = machine.premium_rate
+            machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
+            machine_list.append(machine_dict)
+        sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
+    else:
+        sharing_credit = 0
 
     credit.using_credit += using_credit
     credit.sharing_credit += sharing_credit

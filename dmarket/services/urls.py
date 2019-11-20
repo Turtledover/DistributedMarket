@@ -21,5 +21,5 @@ urlpatterns = [
     path('job/completetest/', views.completetest, name='completetest'),
     path('job/logtest/', views.logtest, name='logtest'),
     path('credit/check_credit/', views.check_credit, name='check_credit'),
-    # path('credit/update_credit/', views.update_credit, name='update_credit'),
+    path('credit/get_price/', views.get_price, name='get_price'),
 ]

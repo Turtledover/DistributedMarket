@@ -128,7 +128,7 @@ class ScanFinishedJobCron(CronJobBase):
         
         # info = {}
         # info['machines'] = macslist
-        used_credit = CreditCore.update_using(job.user, machines, True)
+        used_credit = CreditCore.update_using(job.user, machines, job, True)
         print('used_credit=' + str(used_credit), file=sys.stderr)
         job.start_time = start_time
         job.end_time = end_time

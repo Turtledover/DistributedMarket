@@ -1,6 +1,7 @@
 from ..models import * 
 from django.contrib.auth.models import User
 import sys
+from django.db.models import Q
 
 class CreditCore:
 
@@ -24,15 +25,30 @@ class CreditCore:
 		return True
 
 	@staticmethod
-	def update_usings(user, jobs, real_update=False):
-		new_using_credit = 0
-		for job in jobs:
-			new_using_credit += update_using(user, job, real_update=False)
-		return new_using_credit
+	def get_price(request):
+		alive_jobs = Job.objects.filter(~Q(status='completed') & ~Q(status='completed_fail'))
+		if alive_jobs.exists():
+			num_of_jobs = len(alive_jobs)			
+		else:
+			num_of_jobs = 0
+		
+		existing_machines = Machine.objects.all() 
+
+		if existing_machines.exists():
+			num_of_machines = len(existing_machines)		
+		else:
+			num_of_machines = 0
+		if num_of_jobs <= num_of_machines:
+			res = 1
+		elif num_of_machines * 2 < num_of_jobs:
+			res = 2
+		else:
+			res = round(num_of_jobs / num_of_machines, 4)
+		return res
 
 
 	@staticmethod
-	def update_using(user, executors, real_update=False):
+	def update_using(user, executors, job, real_update=False):
 		credit = Credit.objects.get(user=user)
 		new_using_credit = 0
 		for e in executors:
@@ -41,12 +57,14 @@ class CreditCore:
 				if u['isDriver']:
 					continue
 				num_of_cores = u['cores']
+				memory_size = u['memory']
+				premium_rate = job.premium_rate
 				duration = u['duration'] / 1000 / 3600
-				new_using_credit += float(machine_type) * float(num_of_cores) * duration
+				new_using_credit += (float(machine_type) * float(num_of_cores) + memory_size / 1024 * 0.004) * duration * premium_rate
 		if real_update:
-			credit.using_credit += new_using_credit
+			credit.using_credit += round(new_using_credit, 2)
 			credit.save()
-		return new_using_credit
+		return round(new_using_credit, 2)
 	
 	@staticmethod
 	def update_sharings(user, machines, real_update=False):
@@ -61,10 +79,12 @@ class CreditCore:
 		credit = Credit.objects.get(user=user)
 		machine_type = machine['type']
 		num_of_cores = machine['cores']
+		memory_size = machine['memory']
+		premium_rate = machine['premium_rate']
 		duration = machine['duration'] / 3600
-		new_sharing_credit = float(machine_type) * float(num_of_cores) * duration
+		new_sharing_credit = (float(machine_type) * float(num_of_cores) + memory_size / 1024 * 0.004) * duration * premium_rate
 		if real_update:
-			credit.sharing_credit += new_sharing_credit
+			credit.sharing_credit += round(new_sharing_credit, 2)
 			credit.save()
-		return new_sharing_credit
+		return round(new_sharing_credit, 2)
 
