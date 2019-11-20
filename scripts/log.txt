@@ -1,0 +1,10 @@
+Starting ssh (via systemctl): ssh.service.
+Stopping namenodes on [master]
+Stopping datanodes
+Stopping secondary namenodes [market2-Latitude-7390-2-in-1]
+Starting namenodes on [master]
+Starting datanodes
+Starting secondary namenodes [market2-Latitude-7390-2-in-1]
+Starting resourcemanager
+Starting nodemanagers
+starting org.apache.spark.deploy.history.HistoryServer, logging to /usr/local/spark/logs/spark-root-org.apache.spark.deploy.history.HistoryServer-1-market2-Latitude-7390-2-in-1.out
