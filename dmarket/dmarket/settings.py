@@ -33,6 +33,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'master',
     'localhost',
+    '192.168.1.12',
     '10.0.197.2',  # ip address of the master server
 ]
 

@@ -16,5 +16,6 @@ if [ ! -f /firstlaunch ]; then
 fi
 $SPARK_HOME/sbin/start-history-server.sh --properties-file $SPARK_HOME/conf/spark-defaults.conf
 cron
+# cp ~/.ssh/id_rsa.pub /home/market/DistributedMarket/dmarket/medias/
 python3 ../dmarket/manage.py runserver 0.0.0.0:8000
 python3 ./scripts/init_cluster.py

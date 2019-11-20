@@ -94,7 +94,7 @@ def init_cluster(request):
     # TODO Get the real ip address
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
-    public_key = File(open(Constants.MASTER_PUBKEY_PATH))
+    public_key = File(open(os.path.join('/home/market/DistributedMarket/dmarket/medias/', Constants.MASTER_PUBKEY_PATH)))
     master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
                      time_period=Constants.MASTER_AVAILABLE_TIME, user=tmp_user,
                      public_key=public_key, hostname='master')
