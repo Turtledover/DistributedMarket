@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .models import * 
+from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
@@ -22,6 +22,8 @@ import subprocess
 import psutil
 import os
 import socket
+
+
 ##### User API #####
 @login_required
 def index(request):
@@ -53,21 +55,21 @@ def signup(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
-def login(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'User login API'
 
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
+# def login(request):
+#     context = {}
+#     context['status'] = True
+#     context['error_code'] = 0
+#     context['message'] = 'User login API'
+#
+#     return render(request, 'general_status.json', context,
+#         content_type='application/json')
 
 
 ##### Machine API #####
 @csrf_exempt
 def init_cluster(request):
-    print("hahaha===>")
-    # [TBD] Register an admin user
+    # TODO Register an admin user
     # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
     # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
     # begin
@@ -89,7 +91,7 @@ def init_cluster(request):
 
     core_num = os.cpu_count()
     memory_size = psutil.virtual_memory().total
-    # [TBD] Get the real ip address
+    # TODO Get the real ip address
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
     public_key = File(open(Constants.MASTER_PUBKEY_PATH))
@@ -101,7 +103,7 @@ def init_cluster(request):
     # end
 
 
-@csrf_exempt
+@login_required
 def submit_machine(request):
     if request.method == "GET":
         return HttpResponse('Bad Request!')
@@ -109,25 +111,18 @@ def submit_machine(request):
     # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
     # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
     # begin
-    existing_users = User.objects.filter(username='tmp')
-    if not existing_users:
-        tmp_user = User.objects.create_user('tmp', 'tmp@tmp.com', 'tmp')
-        tmp_user.save()
-    else:
-        tmp_user = existing_users[0]
-
     data = request.POST
     public_keys = []
     host_ip_mapping = {}
     if not Machine.objects.filter(ip_address=data['ip_address']):
         new_machine = Machine(ip_address=data['ip_address'], core_num=data['core_num'],
                               memory_size=data['memory_size'], time_period=data['time_period'],
-                              user=tmp_user)
+                              user=request.user)
         new_machine.public_key = request.FILES['public_key']
         new_machine.save()
         new_machine.hostname = 'slave{0}'.format(new_machine.machine_id)
         new_machine.save()
-        MachineLib.add_new_machine(new_machine.hostname)
+        MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
 
         # Add the public key to the authorized keys of the master node
         with open('/root/.ssh/authorized_keys', 'a') as f:
@@ -143,12 +138,16 @@ def submit_machine(request):
                 # Add all the public key and host info of the new machine to other servers in the current cluster
                 # https://stackoverflow.com/questions/19900754/python-subprocess-run-multiple-shell-commands-over-ssh
                 # begin
-                ssh_session = subprocess.Popen(['ssh', machine.hostname],
-                                               stdin=subprocess.PIPE,
-                                               stdout=subprocess.PIPE,
-                                               stderr=subprocess.PIPE)
-                ssh_session.stdin.write("echo '{0}\t{1}\n' >> /etc/hosts\n".format(new_machine.ip_address, new_machine.hostname).encode('utf-8'))
-                ssh_session.stdin.write("echo '{0}' >> ~/.ssh/id_rsa.pub\n".format(new_machine.public_key.read().decode()).encode('utf-8'))
+                ssh_session = subprocess.Popen(
+                    ['ssh', '-o', 'StrictHostKeyChecking=no', machine.hostname],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+                ssh_session.stdin.write(
+                    "echo '{0}\t{1}\n' >> /etc/hosts\n".format(new_machine.ip_address, new_machine.hostname).encode(
+                        'utf-8'))
+                ssh_session.stdin.write(
+                    "echo '{0}' >> ~/.ssh/id_rsa.pub\n".format(new_machine.public_key.read().decode()).encode('utf-8'))
                 ssh_session.stdin.close()
                 # end
 
@@ -157,44 +156,70 @@ def submit_machine(request):
                          'host_ip_mapping': host_ip_mapping}, safe=False)
 
 
+@login_required
 def remove_machine(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'user: {}'.format(request.user.username)
+    context['message'] = 'user: {0}'.format(request.user.username)
 
-    id = request.GET.get('machine_id')
-    machine = Machine.objects.get(machine_id=id)
+    machines = Machine.objects.filter(machine_id=int(request.POST.get('machine_id')))
+    if not machines:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'The requested machine does not exist.'
+        return render(request, 'general_status.json', context,
+                      content_type='application/json')
+
+    machine = machines[0]
     if machine.user != request.user:
         context['status'] = False
-        context['message'] = 'No permission to remove this machine'
+        context['error_code'] = 1
+        context['message'] = 'No permission to remove this machine.'
     else:
-        MachineLib.remove_machine(machine.hostname)
-
+        MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.REMOVE)
+        # TODO Remove the public key and hostname-ip map of the old machine from each machine in the existing cluster
         machine_info = {
             'type': machine.machine_type,
             'cores': machine.core_num,
-            'duration': int(datetime.datetime.now().strftime("%s")) * 1000 - (int)(machine.start_time.strftime("%s"))
+            'duration': int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
         }
-        CreditCore.update_sharing(request.user, machine_info)
+        CreditCore.update_sharing(request.user, machine_info, True)
         history = HistoryMachine.create(machine)
+        history.user = request.user
         history.save()
         machine.delete()
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
+
 @login_required
 def list_machines(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    context['message'] = 'List machine API'
+    # context['message'] = 'List machine API'
 
     current_user_machines = Machine.objects.filter(user=request.user)
-    context['list'] = current_user_machines
+    # context['list'] = current_user_machines
 
-    return render(request, 'general_status.json', context,
-        content_type='application/json')
+    mlist = []
+    for m in current_user_machines:
+        mObj = {}
+        mObj['id'] = m.machine_id
+        mObj['hostname'] = m.hostname
+        mObj['type'] = m.machine_type
+        mObj['core_num'] = m.core_num
+        mObj['memory'] = m.memory_size
+        mObj['starttime'] = m.start_time
+        mlist.append(mObj)
+    
+    context['result'] = {
+        'machines': mlist
+    }
+    
+    return  JsonResponse(context)
 
 @login_required
 def get_machine_contribution_history(request):
@@ -208,6 +233,7 @@ def get_machine_contribution_history(request):
 
     return render(request, 'general_status.json', context,
                   content_type='application/json')
+
 
 ##### Job API #####
 @login_required

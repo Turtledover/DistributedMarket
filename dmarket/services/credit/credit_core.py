@@ -61,10 +61,10 @@ class CreditCore:
 		credit = Credit.objects.get(user=user)
 		machine_type = machine['type']
 		num_of_cores = machine['cores']
-		duration = machine['duration'] / 1000 / 3600
+		duration = machine['duration'] / 3600
 		new_sharing_credit = float(machine_type) * float(num_of_cores) * duration
 		if real_update:
-			cridet.sharing_credit += new_sharing_credit
+			credit.sharing_credit += new_sharing_credit
 			credit.save()
 		return new_sharing_credit
 

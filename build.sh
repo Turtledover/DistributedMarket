@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t centralserver-hadoop --rm .
+docker build -t centralserver-hadoop-test --rm .
