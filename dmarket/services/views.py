@@ -158,7 +158,7 @@ def submit_machine(request):
     # end
     return JsonResponse({'public_keys': public_keys,
                          'host_ip_mapping': host_ip_mapping,
-                         'premium_rate': format(job.premium_rate, '.0%')}, safe=False)
+                         'premium_rate': format(premium_rate, '.0%')}, safe=False)
 
 
 @login_required
