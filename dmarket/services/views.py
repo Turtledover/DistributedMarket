@@ -29,6 +29,8 @@ import socket
 def index(request):
     return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
 # https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
+
+
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -283,6 +285,7 @@ def submit_job(request):
 
     return JsonResponse(context)
 
+
 @login_required
 def get_job_status(request):
     context = {}
@@ -314,6 +317,7 @@ def get_job_status(request):
     }
 
     return JsonResponse(context)
+
 
 @login_required
 def get_job_list(request):
@@ -365,6 +369,7 @@ def get_job_list(request):
     context['result'] = result
     return JsonResponse(context)
 
+
 @login_required
 def cancel_job(request):
     context = {}
@@ -375,6 +380,7 @@ def cancel_job(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
+
 @login_required
 def get_result(request):
     context = {}
@@ -384,6 +390,7 @@ def get_result(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
 
 @login_required
 def get_log(request):
@@ -489,7 +496,6 @@ def get_log(request):
     return JsonResponse(context)
 
 ##### Credit API #####
-
 @login_required
 def check_credit(request):
     user = request.user
@@ -534,6 +540,7 @@ def check_credit(request):
     # return render(request, 'credit_status.json', context,
     #     content_type='application/json')
 
+
 def jobtest(request):
     print('jobtest', file=sys.stderr)
     context = {}
@@ -559,10 +566,12 @@ def jobtest(request):
     context['result'] = usages
     return JsonResponse(context)
 
+
 def completetest(request):
     scan = ScanFinishedJobCron()
     scan.do()
     return JsonResponse({})
+
 
 def logtest(request):
     url = 'http://slave1:8042/node/containerlogs/container_1572410700786_0001_01_000001/root/stderr?start=-4096'
