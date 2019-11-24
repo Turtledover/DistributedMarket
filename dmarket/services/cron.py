@@ -16,7 +16,7 @@ class SubmitJobCron(CronJobBase):
 
     def getUserName(self, job):
         #TODO: get username from database with user id
-        return 'root'
+        return job.user.username
 
     def do(self):
         log = open('/submit-out', 'a+')

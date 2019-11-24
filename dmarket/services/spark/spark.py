@@ -89,6 +89,8 @@ class Spark:
         :param string appParams: arguments pass to the entry program
         """
 
+        print('submitJob', file=sys.stderr)
+
         logfile = open('/submit-out', 'a+')
         errorfile = open('/submit-err', 'a+')
         logfile.write('submitJob id=' + str(jobId) + '\n')
@@ -97,7 +99,8 @@ class Spark:
         if not entry:
             return
 
-        su = ['su', '-', user, '-c']
+        logfile.write('run as user = ' + user + '\n')
+        su = ['su', '-', user, '-s', '/bin/bash', '-c']
 
         if not 'SPARK_HOME' in os.environ:
             logfile.write('SPARK_HOME is not found in environment\n')
@@ -114,19 +117,19 @@ class Spark:
         ]
         
         if archives:
-            command.extend(['--archives', archives])
+            command.extend(['--archives', '"' + archives + '"'])
 
         if libs:
-            command.extend(['--py-files', libs])
+            command.extend(['--py-files', '"' + libs + '"'])
 
         if appParams:
-            command.extend(['--appArgs', appParams])
+            command.extend(['--appArgs', '"' + appParams + '"'])
 
-        # cmdStr = ' '.join(command)
-        # su.append(cmdStr)
-        # subprocess.Popen(su)
+        cmdStr = ' '.join(command)
+        su.append(cmdStr)
         logfile.write('before subprocess call\n')
-        subprocess.Popen(command)
+        subprocess.Popen(su, stderr=sys.stderr, stdout=sys.stderr)
+        # subprocess.Popen(command)
         
         logfile.write('after subprocess call\n')
         logfile.close()

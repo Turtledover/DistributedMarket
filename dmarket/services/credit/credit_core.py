@@ -60,7 +60,7 @@ class CreditCore:
 				memory_size = u['memory']
 				premium_rate = job.premium_rate
 				duration = u['duration'] / 1000 / 3600
-				new_using_credit += (float(machine_type) * float(num_of_cores) + memory_size / 1024 * 0.004) * duration * premium_rate
+				new_using_credit += (float(machine_type) * float(num_of_cores) + memory_size / 1073741824 * 0.004) * duration * premium_rate
 		if real_update:
 			credit.using_credit += round(new_using_credit, 2)
 			credit.save()

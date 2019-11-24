@@ -17,12 +17,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files import File
 from django.db import models
 from .corelib.machinelib import MachineLib
+from .corelib.userlib import UserLib
 from .constants import *
 import subprocess
 import psutil
 import os
 import socket
-
 
 ##### User API #####
 @login_required
@@ -32,17 +32,19 @@ def index(request):
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
+        
         if form.is_valid():
-            form.save()
             username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            creditCore = CreditCore()
-            success = creditCore.initial_credit(user)
-            if not success:
-                print("initial failure!")
-            login(request, user)
-            return redirect('/')
+            if UserLib.createUser(username):
+                form.save()
+                raw_password = form.cleaned_data.get('password1')
+                user = authenticate(username=username, password=raw_password)
+                creditCore = CreditCore()
+                success = creditCore.initial_credit(user)
+                if not success:
+                    print("initial failure!")
+                login(request, user)
+                return redirect('/')
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
@@ -54,17 +56,6 @@ def signup(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
-
-
-# def login(request):
-#     context = {}
-#     context['status'] = True
-#     context['error_code'] = 0
-#     context['message'] = 'User login API'
-#
-#     return render(request, 'general_status.json', context,
-#         content_type='application/json')
-
 
 ##### Machine API #####
 @csrf_exempt
@@ -593,4 +584,11 @@ def logtest(request):
 
     context = {}
     context['data'] = data
+    return JsonResponse(context)
+
+def submittest(request):
+    cron = SubmitJobCron()
+    cron.do()
+
+    context = {}
     return JsonResponse(context)

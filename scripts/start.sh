@@ -8,6 +8,12 @@ start-yarn.sh
 if [ ! -f /firstlaunch ]; then
     hdfs dfs -mkdir /shared
     hdfs dfs -mkdir /shared/log
+    hdfs dfs -chmod 777 /shared/log/ # TODO: temporary
+    
+    hdfs dfs -mkdir /tmp
+    hdfs dfs -chmod -R 1777 /tmp
+    chmod 777 /hadooptmp/
+    
     python3 /dmarket/manage.py makemigrations --merge
     python3 /dmarket/manage.py migrate
     mkdir /dmarket/medias
