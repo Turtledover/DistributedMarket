@@ -48,7 +48,9 @@ class Spark:
 
     @staticmethod
     def get_attempt_executors_list(spark_id, att_id):
-        url = Spark.spark_status_url + spark_id + '/' + att_id + '/executors'
+        url = Spark.spark_status_url + spark_id + '/executors'
+        if att_id != None:
+            url = Spark.spark_status_url + spark_id + '/' + att_id + '/executors'
 
         try:
             res = requests.get(url)

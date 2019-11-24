@@ -45,7 +45,11 @@ def get_spark_app_machine_usage(spark_id, app):
 
     executors = {}
     for a in app['attempts']:
-        att_id = a['attemptId']
+        att_id = None
+        # 'attemptId' is only available in YARN cluster mode.
+        if 'attemptId' in a:
+            att_id = a['attemptId']
+
         execs = Spark.get_attempt_executors_list(spark_id, att_id)
         if execs is None:
             continue

@@ -44,7 +44,7 @@ object DMLauncher {
         }
         println("jobid=" + jobid)
         println("entry=" + entry)
-
+        
         val countDownLatch = new CountDownLatch(1)
         val job = new SparkLauncher()
             .setMaster("yarn")
@@ -64,8 +64,6 @@ object DMLauncher {
             .setConf("spark.executorEnv.SPARK_YARN_USER_ENV", sys.env("SPARK_YARN_USER_ENV"))
             .setAppResource(entry.toString())
             .setVerbose(true)
-            // .addSparkArg("--archives", "hdfs://master:9000/user/root/mnist/input/data/mnist.zip#mnist")
-            // .addAppArgs("--output", "mnist/output", "--format", "csv")
 
         if(options.contains('archives)) {
             val archives = options.getOrElse('archives, "")
