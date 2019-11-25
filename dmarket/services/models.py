@@ -37,7 +37,8 @@ class Machine(models.Model):
     available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     public_key = models.FileField(blank=False)
-
+    premium_rate = models.FloatField(null=True)
+    
     def __str__(self):
         return ', '.join([str(self.machine_id), str(self.ip_address), str(self.core_num), str(self.memory_size),
                           str(self.time_period), str(self.public_key)])
@@ -81,6 +82,7 @@ class Job(models.Model):
     archives = models.CharField(max_length=1024, default='', blank=True)
     app_params = models.CharField(max_length=1024, default='', blank=True)
     entry_file = models.CharField(max_length=1024, default='')
+    premium_rate = models.FloatField(null=True)
 
     # core_num = models.IntegerField()
     # machine_type = models.CharField(max_length=40, default='GPU', blank=True)

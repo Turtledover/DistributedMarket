@@ -1,3 +1,9 @@
+import subprocess
+import psutil
+import os
+import socket
+import datetime
+import sys
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .models import *
@@ -6,45 +12,44 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
-from .cron import *
-from .spark.spark import *
-from .credit.credit_core import CreditCore
-from .jobhelper import *
-import datetime
-import sys
-
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files import File
 from django.db import models
+
 from .corelib.machinelib import MachineLib
+from .corelib.userlib import UserLib
 from .constants import *
-import subprocess
-import psutil
-import os
-import socket
+from .cron import *
+from services.corelib.spark import *
+from .credit.credit_core import CreditCore
+from services.corelib.jobhelper import *
 
 
 ##### User API #####
 @login_required
 def index(request):
     return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
+
+
 # https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 
 
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
+        
         if form.is_valid():
-            form.save()
             username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            creditCore = CreditCore()
-            success = creditCore.initial_credit(user)
-            if not success:
-                print("initial failure!")
-            login(request, user)
-            return redirect('/')
+            if UserLib.createUser(username):
+                form.save()
+                raw_password = form.cleaned_data.get('password1')
+                user = authenticate(username=username, password=raw_password)
+                creditCore = CreditCore()
+                success = creditCore.initial_credit(user)
+                if not success:
+                    print("initial failure!")
+                login(request, user)
+                return redirect('/')
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
@@ -58,53 +63,7 @@ def signup(request):
         content_type='application/json')
 
 
-# def login(request):
-#     context = {}
-#     context['status'] = True
-#     context['error_code'] = 0
-#     context['message'] = 'User login API'
-#
-#     return render(request, 'general_status.json', context,
-#         content_type='application/json')
-
-
 ##### Machine API #####
-@csrf_exempt
-def init_cluster(request):
-    # TODO Register an admin user
-    # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
-    # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
-    # begin
-    existing_users = User.objects.filter(username='tmp')
-    if not existing_users:
-        tmp_user = User.objects.create_user('tmp', 'tmp@tmp.com', 'tmp')
-        tmp_user.save()
-    else:
-        tmp_user = existing_users[0]
-    # end
-    # The ways to access the machine data is cited from
-    # https://www.pythoncircle.com/post/535/python-script-9-getting-system-information-in-linux-using-python-script/
-    # https://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-using-python
-    # https://stackoverflow.com/questions/22102999/get-total-physical-memory-in-python/28161352
-    # https://www.geeksforgeeks.org/display-hostname-ip-address-python/
-    # begin
-    if len(Machine.objects.filter(hostname='master')) > 0:
-        return JsonResponse("The master node has existed.", safe=False)
-
-    core_num = os.cpu_count()
-    memory_size = psutil.virtual_memory().total
-    # TODO Get the real ip address
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    public_key = File(open(Constants.MASTER_PUBKEY_PATH))
-    master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
-                     time_period=Constants.MASTER_AVAILABLE_TIME, user=tmp_user,
-                     public_key=public_key, hostname='master')
-    master.save()
-    return JsonResponse("Success!", safe=False)
-    # end
-
-
 @login_required
 def submit_machine(request):
     if request.method == "GET":
@@ -116,6 +75,7 @@ def submit_machine(request):
     data = request.POST
     public_keys = []
     host_ip_mapping = {}
+    premium_rate = 1 
     if not Machine.objects.filter(ip_address=data['ip_address']):
         new_machine = Machine(ip_address=data['ip_address'], core_num=data['core_num'],
                               memory_size=data['memory_size'], time_period=data['time_period'],
@@ -123,6 +83,9 @@ def submit_machine(request):
         new_machine.public_key = request.FILES['public_key']
         new_machine.save()
         new_machine.hostname = 'slave{0}'.format(new_machine.machine_id)
+        new_machine.save()
+        premium_rate = CreditCore.get_price(request)
+        new_machine.premium_rate = premium_rate
         new_machine.save()
         MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
 
@@ -155,7 +118,8 @@ def submit_machine(request):
 
     # end
     return JsonResponse({'public_keys': public_keys,
-                         'host_ip_mapping': host_ip_mapping}, safe=False)
+                         'host_ip_mapping': host_ip_mapping,
+                         'premium_rate': format(premium_rate, '.0%')}, safe=False)
 
 
 @login_required
@@ -184,6 +148,8 @@ def remove_machine(request):
         machine_info = {
             'type': machine.machine_type,
             'cores': machine.core_num,
+            #credit by lyulinag
+            'memory': machine.memory_size,
             'duration': int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
         }
         CreditCore.update_sharing(request.user, machine_info, True)
@@ -201,10 +167,8 @@ def list_machines(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    # context['message'] = 'List machine API'
 
     current_user_machines = Machine.objects.filter(user=request.user)
-    # context['list'] = current_user_machines
 
     mlist = []
     for m in current_user_machines:
@@ -221,7 +185,8 @@ def list_machines(request):
         'machines': mlist
     }
     
-    return  JsonResponse(context)
+    return JsonResponse(context)
+
 
 @login_required
 def get_machine_contribution_history(request):
@@ -256,7 +221,6 @@ def submit_job(request):
     user = User.objects.get(id=request.user.id)
 
     job = Job()
-    # job.root_path = request.GET['root_path']
     
     # TODO: sanitize parameters
     if 'libs' in request.GET:
@@ -275,12 +239,14 @@ def submit_job(request):
 
     job.user = user
     job.status = 'new'
+    job.premium_rate = CreditCore.get_price(request)
     job.save()
     
     context['status'] = True
     context['error_code'] = 0
     context['result'] = {
-        'job_id': job.job_id
+        'job_id': job.job_id,
+        'premium_rate': format(job.premium_rate, '.0%')
     }
 
     return JsonResponse(context)
@@ -368,28 +334,6 @@ def get_job_list(request):
     context['error_code'] = 0
     context['result'] = result
     return JsonResponse(context)
-
-
-@login_required
-def cancel_job(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'Cancel job API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
-
-
-@login_required
-def get_result(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'Get result API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
 
 
 @login_required
@@ -495,7 +439,40 @@ def get_log(request):
 
     return JsonResponse(context)
 
+
+@login_required
+def cancel_job(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['message'] = 'Coming soon: Cancel job API'
+
+    return render(request, 'general_status.json', context, 
+        content_type='application/json')
+
+
+@login_required
+def get_result(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['message'] = 'Coming soon: Get result API'
+
+    return render(request, 'general_status.json', context, 
+        content_type='application/json')
+
+
 ##### Credit API #####
+@login_required
+def get_price(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    res = format(CreditCore.get_price(request), '.0%') 
+    context['premium_rate'] = res
+    return JsonResponse(context)
+
+
 @login_required
 def check_credit(request):
     user = request.user
@@ -504,25 +481,30 @@ def check_credit(request):
 
     jobs = Job.objects.filter(user=request.user)
 
-    job_list = []
+    machiine_list = []
+    using_credit = 0
     for job in jobs:
         job_dict = {}
         if job.status is not 'running':
             continue
         executors = get_job_machines_usage(job)
-        job_list.append(executors)
-    using_credit = CreditCore.update_usings(user, job_list, real_update=False)
+        machiine_list.append(executors)
+        using_credit += CreditCore.update_using(user, machiine_list, job, real_update=False)
 
     machine_list = []
     machines = Machine.objects.filter(user=request.user)
-
-    for machine in machines:
-        machine_dict = {}
-        machine_dict['type'] = machine.machine_type
-        machine_dict['cores'] = machine.core_num
-        machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
-        machine_list.append(machine_dict)
-    sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
+    if machines.exists():
+        for machine in machines:
+            machine_dict = {}
+            machine_dict['type'] = machine.machine_type
+            machine_dict['cores'] = machine.core_num
+            machine_dict['memory'] = machine.memory_size
+            machine_dict['premium_rate'] = machine.premium_rate
+            machine_dict['duration'] = int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s"))
+            machine_list.append(machine_dict)
+        sharing_credit = CreditCore.update_sharings(user, machine_list, real_update=False)
+    else:
+        sharing_credit = 0
 
     credit.using_credit += using_credit
     credit.sharing_credit += sharing_credit
@@ -530,17 +512,15 @@ def check_credit(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    # context['credit'] = credit
     context['using_credit'] = credit.using_credit
     context['sharing_credit'] = credit.sharing_credit
     context['rate'] = credit.rate
     context['message'] = 'Get credit info'
 
     return JsonResponse(context)
-    # return render(request, 'credit_status.json', context,
-    #     content_type='application/json')
 
 
+##### Some API for easy testing #####
 def jobtest(request):
     print('jobtest', file=sys.stderr)
     context = {}
@@ -568,15 +548,31 @@ def jobtest(request):
 
 
 def completetest(request):
+    """
+    Trigger scanning for finished job in database and compute credit
+    """
     scan = ScanFinishedJobCron()
     scan.do()
     return JsonResponse({})
 
 
 def logtest(request):
+    """
+    Test getting an application log from hadoop.
+    """
     url = 'http://slave1:8042/node/containerlogs/container_1572410700786_0001_01_000001/root/stderr?start=-4096'
     data = get_hadoop_log(url)
 
     context = {}
     context['data'] = data
+    return JsonResponse(context)
+
+def submittest(request):
+    """
+    Trigger job to be submitted to Spark
+    """
+    cron = SubmitJobCron()
+    cron.do()
+
+    context = {}
     return JsonResponse(context)

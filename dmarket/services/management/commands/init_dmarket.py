@@ -57,5 +57,5 @@ class Command(BaseCommand):
         public_key.name = Constants.MASTER_PUBKEY_PATH
         master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
                         time_period=Constants.MASTER_AVAILABLE_TIME, user=adminUser,
-                        public_key=public_key, hostname=Constants.MASTER_HOST)
+                        public_key=public_key, hostname=Constants.MASTER_HOST,premium_rate=1)
         master.save()

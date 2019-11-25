@@ -1,11 +1,11 @@
 from django_cron import CronJobBase, Schedule
 from django.core.files import File
 from django.db.models import Q
-from .spark.spark import *
+from services.corelib.spark import *
 from .models import *
 import requests
 import sys
-from .jobhelper import *
+from services.corelib.jobhelper import *
 from .credit.credit_core import CreditCore
 
 class SubmitJobCron(CronJobBase):
@@ -13,10 +13,6 @@ class SubmitJobCron(CronJobBase):
 
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'services.submit_job_cron' # a unique code
-
-    def getUserName(self, job):
-        #TODO: get username from database with user id
-        return 'root'
 
     def do(self):
         log = open('/submit-out', 'a+')
@@ -35,7 +31,7 @@ class SubmitJobCron(CronJobBase):
 
         try:
             Spark.submitJob(
-                self.getUserName(job), 
+                job.user.username, 
                 job.job_id,
                 job.entry_file,
                 job.libs,
@@ -59,7 +55,7 @@ class ScanFinishedJobCron(CronJobBase):
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
 
     def do(self):
-        jobs = Job.objects.filter(status='finished')
+        jobs = Job.objects.filter(Q(status='finished') | Q(status='failed'))
 
         for j in jobs:
             self.complete_job(j)
@@ -69,117 +65,42 @@ class ScanFinishedJobCron(CronJobBase):
     def complete_job(self, job):
         spark_id = job.spark_id
 
+        if not spark_id and job.status == 'failed':
+            self.update_submit_fail_job(job)
+            return
+
         app = Spark.get_spark_app(spark_id)
         print(app, file=sys.stderr)
         if app is None or not 'attempts' in app:
-            # TODO: update retry count and remove it after certain threshold
-            print('app is None', file=sys.stderr)
+            if job.status == 'failed':
+                self.update_submit_fail_job(job)
             return
 
         start_time = 0
         end_time = 0
-        # executors = {}
         for a in app['attempts']:
-            # att_id = a['attemptId']
-
             if start_time == 0 or a['startTimeEpoch'] < start_time:
                 start_time = a['startTimeEpoch']
 
             if end_time == 0 or a['endTimeEpoch'] > end_time:
                 end_time = a['endTimeEpoch']
 
-            # execs = self.get_attempt_executors(spark_id, att_id)
-            # if execs is None:
-            #     continue
-            
-            # for e in execs:
-            #     if not e in executors:
-            #         executors[e] = []
-                
-            #     executors[e].extend(execs[e])
-
-        # if len(executors) == 0:
-        #     return
-
-        # qObjs = Q()
-        # for host in executors:
-        #     qObjs |= Q(ip_address=host)
-
-        # macslist = []
-        # machs = Machine.objects.filter(qObjs)
-        # for m in machs:
-        #     elist = executors[m.ip_address]
-        #     for e in elist:
-        #         e['type'] = m.machine_type
-        #         macslist.append(e)
-
         machines = get_spark_app_machine_usage(spark_id, app)
 
-        # Convert the format to credit system format.
-        # macslist = []
-        # for m in machines:
-        #     for u in machines[m]['usage']:
-        #         macslist.append({
-        #             'cores': u['cores'],
-        #             'memory': u['memory'],
-        #             'duration': u['duration'],
-        #             'type': machines[m]['type']
-        #         })
-        
-        # info = {}
-        # info['machines'] = macslist
-        used_credit = CreditCore.update_using(job.user, machines, True)
+        used_credit = CreditCore.update_using(job.user, machines, job, True)
         print('used_credit=' + str(used_credit), file=sys.stderr)
         job.start_time = start_time
         job.end_time = end_time
         job.used_credits = used_credit
-        job.status = 'completed'
+        if job.status == 'finished':
+            job.status = 'completed'
+        else:
+            job.status = 'fail_completed'
         job.save()
         return
-    
-    # def update_using(self, user, info):
-    #     print('user id=' + str(user.id), file=sys.stderr)
-    #     print(info, file=sys.stderr)
-    #     return 10
 
-    # def get_attempt_executors(self, spark_id, att_id):
-    #     url = ScanFinishedJobCron.spark_status_url + spark_id + '/' + att_id + '/executors'
-
-    #     try:
-    #         res = requests.get(url)
-    #         if res.status_code == 200:
-    #             print('status is 200', file=sys.stderr)
-    #             execs = {}
-    #             executors = res.json()
-    #             print(executors, file=sys.stderr)
-    #             for e in executors:
-    #                 if e['id'] == 'driver':
-    #                     continue
-                    
-    #                 host = e['hostPort'].split(':')[0]
-    #                 if not host in execs:
-    #                     execs[host] = []
-                    
-    #                 execs[host].append({
-    #                     'cores': e['totalCores'],
-    #                     'memory': e['maxMemory'],
-    #                     'duration': e['totalDuration']
-    #                 })
-    #             return execs
-            
-    #     except Exception as e:
-    #         print('get_attempt_executors exception', file=sys.stderr)
-    #         print(e, file=sys.stderr)
-
-    #     return None
-        
-    # def get_spark_app(self, spark_id):
-    #     url = ScanFinishedJobCron.spark_status_url + spark_id
-    #     try:
-    #         res = requests.get(url)
-    #         if res.status_code == 200:
-    #             return res.json()
-    #     except Exception as e:
-    #         print('exception')
-        
-    #     return None
+    def update_submit_fail_job(self, job):
+        job.used_credits = 0
+        job.status = 'fail_completed'
+        job.save()
+        return

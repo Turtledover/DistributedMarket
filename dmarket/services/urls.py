@@ -6,7 +6,6 @@ urlpatterns = [
     path('', views.index, name='index'),
     # path('user/register/', views.register, name='register'),
     path('user/login/', views.login, name='login'),
-    path('machine/init_cluster/', views.init_cluster, name='init_cluster'),
     path('machine/submit/', views.submit_machine, name='submit_machine'),
     path('machine/remove/', views.remove_machine, name='remove_machine'),
     path('machine/list/', views.list_machines, name='list_machine'),
@@ -20,6 +19,7 @@ urlpatterns = [
     path('job/test/', views.jobtest, name='jobtest'),
     path('job/completetest/', views.completetest, name='completetest'),
     path('job/logtest/', views.logtest, name='logtest'),
+    path('job/submittest/', views.submittest, name='submittest'),
     path('credit/check_credit/', views.check_credit, name='check_credit'),
-    # path('credit/update_credit/', views.update_credit, name='update_credit'),
+    path('credit/get_price/', views.get_price, name='get_price'),
 ]
