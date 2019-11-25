@@ -79,3 +79,7 @@ sudo apt-get install -y cron
 cp conf/cron/services.cron /etc/cron.d/
 chmod 0644 /etc/cron.d/services.cron \
   crontab /etc/cron.d/services.cron
+
+# Install the PostgreSQL
+sudo apt-get install libpq-dev postgresql postgresql-contrib -y
+sudo -u postgresql psql
