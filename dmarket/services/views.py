@@ -28,6 +28,8 @@ import socket
 @login_required
 def index(request):
     return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
+
+
 # https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 def signup(request):
     if request.method == 'POST':
@@ -57,43 +59,8 @@ def signup(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
+
 ##### Machine API #####
-@csrf_exempt
-def init_cluster(request):
-    # TODO Register an admin user
-    # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
-    # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
-    # begin
-    existing_users = User.objects.filter(username='tmp')
-    if not existing_users:
-        tmp_user = User.objects.create_user('tmp', 'tmp@tmp.com', 'tmp')
-        tmp_user.save()
-    else:
-        tmp_user = existing_users[0]
-    # end
-    # The ways to access the machine data is cited from
-    # https://www.pythoncircle.com/post/535/python-script-9-getting-system-information-in-linux-using-python-script/
-    # https://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-using-python
-    # https://stackoverflow.com/questions/22102999/get-total-physical-memory-in-python/28161352
-    # https://www.geeksforgeeks.org/display-hostname-ip-address-python/
-    # begin
-    if len(Machine.objects.filter(hostname='master')) > 0:
-        return JsonResponse("The master node has existed.", safe=False)
-
-    core_num = os.cpu_count()
-    memory_size = psutil.virtual_memory().total
-    # TODO Get the real ip address
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    public_key = File(open(Constants.MASTER_PUBKEY_PATH))
-    master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
-                     time_period=Constants.MASTER_AVAILABLE_TIME, user=tmp_user,
-                     public_key=public_key, hostname='master')
-    master.save()
-    return JsonResponse("Success!", safe=False)
-    # end
-
-
 @login_required
 def submit_machine(request):
     if request.method == "GET":
@@ -217,7 +184,8 @@ def list_machines(request):
         'machines': mlist
     }
     
-    return  JsonResponse(context)
+    return JsonResponse(context)
+
 
 @login_required
 def get_machine_contribution_history(request):
@@ -315,6 +283,7 @@ def get_job_status(request):
 
     return JsonResponse(context)
 
+
 @login_required
 def get_job_list(request):
     """
@@ -365,6 +334,7 @@ def get_job_list(request):
     context['result'] = result
     return JsonResponse(context)
 
+
 @login_required
 def cancel_job(request):
     context = {}
@@ -375,6 +345,7 @@ def cancel_job(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
+
 @login_required
 def get_result(request):
     context = {}
@@ -384,6 +355,7 @@ def get_result(request):
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
+
 
 @login_required
 def get_log(request):
@@ -488,8 +460,8 @@ def get_log(request):
 
     return JsonResponse(context)
 
-##### Credit API #####
 
+##### Credit API #####
 @login_required
 def get_price(request):
     context = {}
@@ -498,6 +470,7 @@ def get_price(request):
     res = format(CreditCore.get_price(request), '.0%') 
     context['premium_rate'] = res
     return JsonResponse(context)
+
 
 @login_required
 def check_credit(request):
@@ -548,6 +521,7 @@ def check_credit(request):
     # return render(request, 'credit_status.json', context,
     #     content_type='application/json')
 
+
 def jobtest(request):
     print('jobtest', file=sys.stderr)
     context = {}
@@ -573,10 +547,12 @@ def jobtest(request):
     context['result'] = usages
     return JsonResponse(context)
 
+
 def completetest(request):
     scan = ScanFinishedJobCron()
     scan.do()
     return JsonResponse({})
+
 
 def logtest(request):
     url = 'http://slave1:8042/node/containerlogs/container_1572410700786_0001_01_000001/root/stderr?start=-4096'
@@ -585,6 +561,7 @@ def logtest(request):
     context = {}
     context['data'] = data
     return JsonResponse(context)
+
 
 def submittest(request):
     cron = SubmitJobCron()
