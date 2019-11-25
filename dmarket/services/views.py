@@ -67,42 +67,6 @@ def signup(request):
 
 
 ##### Machine API #####
-@csrf_exempt
-def init_cluster(request):
-    # TODO Register an admin user
-    # https://stackoverflow.com/questions/10372877/how-to-create-a-user-in-django
-    # https://stackoverflow.com/questions/45044691/how-to-serializejson-filefield-in-django
-    # begin
-    existing_users = User.objects.filter(username='tmp')
-    if not existing_users:
-        tmp_user = User.objects.create_user('tmp', 'tmp@tmp.com', 'tmp')
-        tmp_user.save()
-    else:
-        tmp_user = existing_users[0]
-    # end
-    # The ways to access the machine data is cited from
-    # https://www.pythoncircle.com/post/535/python-script-9-getting-system-information-in-linux-using-python-script/
-    # https://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-using-python
-    # https://stackoverflow.com/questions/22102999/get-total-physical-memory-in-python/28161352
-    # https://www.geeksforgeeks.org/display-hostname-ip-address-python/
-    # begin
-    if len(Machine.objects.filter(hostname='master')) > 0:
-        return JsonResponse("The master node has existed.", safe=False)
-
-    core_num = os.cpu_count()
-    memory_size = psutil.virtual_memory().total
-    # TODO Get the real ip address
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    public_key = File(open(Constants.MASTER_PUBKEY_PATH))
-    master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
-                     time_period=Constants.MASTER_AVAILABLE_TIME, user=tmp_user,
-                     public_key=public_key, hostname='master')
-    master.save()
-    return JsonResponse("Success!", safe=False)
-    # end
-
-
 @login_required
 def submit_machine(request):
     if request.method == "GET":
