@@ -88,4 +88,9 @@ crontab /etc/cron.d/services.cron
 
 # Install the PostgreSQL
 apt-get install libpq-dev postgresql postgresql-contrib -y
-sudo -u postgres psql
+sudo -u postgres psql -c "CREATE DATABASE postgres;"
+sudo -u postgres psql -c "CREATE USER postgres WITH PASSWORD '123456';"
+sudo -u postgres psql -c "ALTER ROLE postgres SET client_encoding TO 'utf8';"
+sudo -u postgres psql -c "ALTER ROLE postgres SET default_transaction_isolation TO 'read committed';"
+sudo -u postgres psql -c "ALTRE ROLE postgres SET timezone TO 'UTC';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO postgres;"
