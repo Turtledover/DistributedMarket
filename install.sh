@@ -88,4 +88,4 @@ crontab /etc/cron.d/services.cron
 
 # Install the PostgreSQL
 apt-get install libpq-dev postgresql postgresql-contrib -y
-sudo -u postgresql psql
+sudo -u postgres psql
