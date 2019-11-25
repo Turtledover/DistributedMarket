@@ -1,6 +1,10 @@
 # The downloaded installation package contains the following files:
 # - install.sh
 # - conf/
+# - dmarket/
+# - scripts/
+# - sample/
+# - scala/
 
 # Install the required packages
 sudo apt-get update
@@ -63,3 +67,15 @@ pip3 install tensorflow tensorflowonspark==1.4.4
   echo "SPARK_YARN_USER_ENV PYSPARK_PYTHON=/usr/bin/python3.6"; \
   echo "CLASSPATH=$(hadoop classpath --glob)"; } >> /etc/environment
 source /etc/environment
+
+# Install other dependencies
+pip3 install Django==2.1.* \
+  && pip3 install psycopg2-binary \
+  && pip3 install django-cron \
+  && pip3 install -U python-dotenv \
+  && pip3 install psutil \
+  && pip3 install requests
+sudo apt-get install -y cron
+cp conf/cron/services.cron /etc/cron.d/
+chmod 0644 /etc/cron.d/services.cron \
+  crontab /etc/cron.d/services.cron
