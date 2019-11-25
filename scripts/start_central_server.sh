@@ -1,6 +1,8 @@
 #!/bin/bash
 
 /etc/init.d/ssh start
+$SPARK_HOME/sbin/stop-history-server.sh
+stop-yarn.sh
 stop-dfs.sh
 start-dfs.sh
 start-yarn.sh
