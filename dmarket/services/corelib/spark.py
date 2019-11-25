@@ -5,19 +5,28 @@ import sys
 import requests
 
 class Spark:
+    # Url of Spark History Server
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
     
     @staticmethod
     def get_attempts_executors_log(spark_id, att_id):
-        url = Spark.spark_status_url + spark_id + '/' + att_id + '/executors'
+        """
+        Retrieve url of all logs from all executors from an application attempt.
+
+        :param string spark_id: Spark application ID.
+        :param string att_id: AttemptID. None if not running in YARN cluster mode.
+        :return: a list of all executors and their log url.
+        """
+
+        url = Spark.spark_status_url + spark_id + '/executors'
+        if att_id != None:
+            url = Spark.spark_status_url + spark_id + '/' + att_id + '/executors'
 
         try:
             res = requests.get(url)
             if res.status_code == 200:
-                print('status is 200', file=sys.stderr)
                 result = []
                 executors = res.json()
-                print(executors, file=sys.stderr)
                 for e in executors:
                     r = {}
                     r['id'] = e['id']
@@ -34,6 +43,14 @@ class Spark:
     
     @staticmethod
     def get_spark_app(spark_id):
+        """
+        Retrieve a Spark application status from Spark History Server.
+        Reference: https://spark.apache.org/docs/latest/monitoring.html
+
+        :param string spark_id: Spark application ID
+        :return: the application json object from Spark History Server
+        """
+
         print('get_spark_app', file=sys.stderr)
         url = Spark.spark_status_url + spark_id
         try:
@@ -48,6 +65,13 @@ class Spark:
 
     @staticmethod
     def get_attempt_executors_list(spark_id, att_id):
+        """
+        Retrieve all executors of an application attempt.
+
+        :param string spark_id: Application ID provided by Spark
+        :param string att_id: AttemptID. None if not running in YARN cluster mode
+        """
+
         url = Spark.spark_status_url + spark_id + '/executors'
         if att_id != None:
             url = Spark.spark_status_url + spark_id + '/' + att_id + '/executors'
@@ -83,6 +107,10 @@ class Spark:
     @staticmethod
     def submitJob(user, jobId, entry, libs, archives, appParams):
         """
+        Launch a SparkLauncher in a jar and pass the parameter to it to submit
+        application to spark. We used SparkLauncher so that we could monitor the
+        status of an application.
+
         :param string user: username to run the job
         :param int jobId: Job ID
         :param string entry: the python entry program to run
@@ -91,29 +119,24 @@ class Spark:
         :param string appParams: arguments pass to the entry program
         """
 
-        print('submitJob', file=sys.stderr)
-
-        logfile = open('/submit-out', 'a+')
-        errorfile = open('/submit-err', 'a+')
-        logfile.write('submitJob id=' + str(jobId) + '\n')
+        print('submitJob id=' + str(jobId), file=sys.stderr)
 
         # TODO: check file exist
         if not entry:
             return
 
-        logfile.write('run as user = ' + user + '\n')
+        print('run as user = ' + user, file=sys.stderr)
         su = ['su', '-', user, '-s', '/bin/bash', '-c']
 
         if not 'SPARK_HOME' in os.environ:
-            logfile.write('SPARK_HOME is not found in environment\n')
-            logfile.close()
+            print('SPARK_HOME is not found in environment', file=sys.stderr)
             return
 
         # TODO: make jars path and main path configurable
         command = [
             '/usr/bin/scala',
             '-classpath', os.environ['SPARK_HOME'] + '/jars/spark-launcher_2.11-2.4.4.jar',
-            '/scala/dmlauncher-assembly-1.0.jar',
+            '/scala/dmlauncher.jar',
             '--entry', entry,
             '--jobid', str(jobId)
         ]
@@ -129,23 +152,8 @@ class Spark:
 
         cmdStr = ' '.join(command)
         su.append(cmdStr)
-        logfile.write('before subprocess call\n')
+        print('before subprocess call', file=sys.stderr)
         subprocess.Popen(su, stderr=sys.stderr, stdout=sys.stderr)
-        # subprocess.Popen(command)
-        
-        logfile.write('after subprocess call\n')
-        logfile.close()
-        errorfile.close()
+        print('after subprocess call', file=sys.stderr)
 
         return
-
-if __name__ == '__main__':
-    Spark.submitJob(
-        '1',
-        '2',
-        'hdfs:///user/root/mnist/input/code/spark/mnist_spark.py',
-        'hdfs:///user/root/mnist/input/code/spark/mnist_dist.py',
-        '',
-        '--images mnist/output/test/images --labels mnist/output/test/labels --mode inference --model mnist/output/mnist_model --output mnist/output/predictions'
-    )
-    print('Finish submitJob')

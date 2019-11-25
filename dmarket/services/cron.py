@@ -15,12 +15,10 @@ class SubmitJobCron(CronJobBase):
     code = 'services.submit_job_cron' # a unique code
 
     def do(self):
-        log = open('/submit-out', 'a+')
-        log.write('cron run\n')
+        print('cron run', file=sys.stderr)
 
         new_jobs = Job.objects.filter(status='new')
         if len(new_jobs) == 0:
-            log.close()
             return
         job = new_jobs.first()
         job.status = 'pending'
@@ -39,12 +37,11 @@ class SubmitJobCron(CronJobBase):
                 job.app_params
             )
         except Exception as e:
-            log.write('exeption\n')
+            print('exeption', file=sys.stderr)
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(e).__name__, e.args)
-            log.write(message)
+            print(message, file=sys.stderr)
 
-        log.close()
         return
 
 class ScanFinishedJobCron(CronJobBase):

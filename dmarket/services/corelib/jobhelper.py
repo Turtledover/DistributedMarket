@@ -6,6 +6,9 @@ import sys
 
 def get_job_machines_usage(job):
     """
+    Get machines usage of a single job.
+
+    :param Job job: target job model
     :return dict: Format
     {
         "host1": {
@@ -95,6 +98,11 @@ class LogParser(HTMLParser):
             self.data += data
 
 def get_hadoop_log(url):
+    """
+    Parse executor log from html body.
+    :param str url: url of the executor log
+    :return: log in string
+    """
     url = url.split('?')[0]
     url += '?start=0'
 
@@ -102,7 +110,6 @@ def get_hadoop_log(url):
     if res.status_code == 200:
         parser = LogParser()
         parser.feed(res.content.decode("utf-8"))
-        print(parser.data, file=sys.stderr)
         return parser.data
     
     return ''
