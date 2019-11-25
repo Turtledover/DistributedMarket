@@ -69,11 +69,15 @@ class ScanFinishedJobCron(CronJobBase):
     def complete_job(self, job):
         spark_id = job.spark_id
 
+        if not spark_id and job.status == 'failed':
+            self.update_submit_fail_job(job)
+            return
+
         app = Spark.get_spark_app(spark_id)
         print(app, file=sys.stderr)
         if app is None or not 'attempts' in app:
-            # TODO: update retry count and remove it after certain threshold
-            print('app is None', file=sys.stderr)
+            if job.status == 'failed':
+                self.update_submit_fail_job(job)
             return
 
         start_time = 0
@@ -95,6 +99,12 @@ class ScanFinishedJobCron(CronJobBase):
         if job.status == 'finished':
             job.status = 'completed'
         else:
-            job.status = 'completed_fail'
+            job.status = 'fail_completed'
+        job.save()
+        return
+
+    def update_submit_fail_job(self, job):
+        job.used_credits = 0
+        job.status = 'fail_completed'
         job.save()
         return

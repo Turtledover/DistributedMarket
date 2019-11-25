@@ -26,7 +26,7 @@ class CreditCore:
 
 	@staticmethod
 	def get_price(request):
-		alive_jobs = Job.objects.filter(~Q(status='completed') & ~Q(status='completed_fail'))
+		alive_jobs = Job.objects.filter(~Q(status='completed') & ~Q(status='fail_completed'))
 		if alive_jobs.exists():
 			num_of_jobs = len(alive_jobs)			
 		else:
