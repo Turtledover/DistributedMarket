@@ -25,6 +25,3 @@ fi
 $SPARK_HOME/sbin/start-history-server.sh --properties-file $SPARK_HOME/conf/spark-defaults.conf
 cron
 python3 /dmarket/manage.py runserver 0.0.0.0:8000
-# sleep 5
-# python3 /scripts/init_cluster.py
-# tail -f /dev/null
