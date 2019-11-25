@@ -6,12 +6,12 @@ then
     exit
 fi
 
-hadoop fs -mkdir /user
-hadoop fs -mkdir /user/$USER/
-hadoop fs -mkdir /user/$USER/mnist
-hadoop fs -mkdir /user/$USER/mnist/input
-hadoop fs -mkdir /user/$USER/mnist/input/data
-hadoop fs -copyFromLocal code/ /user/$USER/mnist/input/
-hadoop fs -copyFromLocal mnist/mnist.zip /user/$USER/mnist/input/data/
+hdfs dfs -mkdir /user
+hdfs dfs -mkdir /user/$USER/
+hdfs dfs -mkdir /user/$USER/mnist
+hdfs dfs -mkdir /user/$USER/mnist/input
+hdfs dfs -mkdir /user/$USER/mnist/input/data
+hdfs dfs -copyFromLocal code/ /user/$USER/mnist/input/
+hdfs dfs -copyFromLocal mnist/mnist.zip /user/$USER/mnist/input/data/
 
-hadoop fs -mkdir /user/$USER/mnist/output
+hdfs dfs -mkdir /user/$USER/mnist/output

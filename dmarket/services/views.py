@@ -1,3 +1,9 @@
+import subprocess
+import psutil
+import os
+import socket
+import datetime
+import sys
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .models import *
@@ -6,23 +12,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
-from .cron import *
-from .spark.spark import *
-from .credit.credit_core import CreditCore
-from .jobhelper import *
-import datetime
-import sys
-
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files import File
 from django.db import models
+
 from .corelib.machinelib import MachineLib
 from .corelib.userlib import UserLib
 from .constants import *
-import subprocess
-import psutil
-import os
-import socket
+from .cron import *
+from services.corelib.spark import *
+from .credit.credit_core import CreditCore
+from services.corelib.jobhelper import *
+
 
 ##### User API #####
 @login_required
@@ -164,10 +165,8 @@ def list_machines(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    # context['message'] = 'List machine API'
 
     current_user_machines = Machine.objects.filter(user=request.user)
-    # context['list'] = current_user_machines
 
     mlist = []
     for m in current_user_machines:
@@ -220,7 +219,6 @@ def submit_job(request):
     user = User.objects.get(id=request.user.id)
 
     job = Job()
-    # job.root_path = request.GET['root_path']
     
     # TODO: sanitize parameters
     if 'libs' in request.GET:
@@ -334,29 +332,6 @@ def get_job_list(request):
     context['result'] = result
     return JsonResponse(context)
 
-
-@login_required
-def cancel_job(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'Cancel job API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
-
-
-@login_required
-def get_result(request):
-    context = {}
-    context['status'] = True
-    context['error_code'] = 0
-    context['message'] = 'Get result API'
-
-    return render(request, 'general_status.json', context, 
-        content_type='application/json')
-
-
 @login_required
 def get_log(request):
     """
@@ -460,6 +435,25 @@ def get_log(request):
 
     return JsonResponse(context)
 
+@login_required
+def cancel_job(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['message'] = 'Coming soon: Cancel job API'
+
+    return render(request, 'general_status.json', context, 
+        content_type='application/json')
+
+@login_required
+def get_result(request):
+    context = {}
+    context['status'] = True
+    context['error_code'] = 0
+    context['message'] = 'Coming soon: Get result API'
+
+    return render(request, 'general_status.json', context, 
+        content_type='application/json')
 
 ##### Credit API #####
 @login_required
@@ -511,17 +505,14 @@ def check_credit(request):
     context = {}
     context['status'] = True
     context['error_code'] = 0
-    # context['credit'] = credit
     context['using_credit'] = credit.using_credit
     context['sharing_credit'] = credit.sharing_credit
     context['rate'] = credit.rate
     context['message'] = 'Get credit info'
 
     return JsonResponse(context)
-    # return render(request, 'credit_status.json', context,
-    #     content_type='application/json')
 
-
+##### Some API for easy testing #####
 def jobtest(request):
     print('jobtest', file=sys.stderr)
     context = {}
@@ -549,12 +540,18 @@ def jobtest(request):
 
 
 def completetest(request):
+    """
+    Trigger scanning for finished job in database and compute credit
+    """
     scan = ScanFinishedJobCron()
     scan.do()
     return JsonResponse({})
 
 
 def logtest(request):
+    """
+    Test getting an application log from hadoop.
+    """
     url = 'http://slave1:8042/node/containerlogs/container_1572410700786_0001_01_000001/root/stderr?start=-4096'
     data = get_hadoop_log(url)
 
@@ -562,8 +559,10 @@ def logtest(request):
     context['data'] = data
     return JsonResponse(context)
 
-
 def submittest(request):
+    """
+    Trigger job to be submitted to Spark
+    """
     cron = SubmitJobCron()
     cron.do()
 

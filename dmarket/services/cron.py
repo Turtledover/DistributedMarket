@@ -1,11 +1,11 @@
 from django_cron import CronJobBase, Schedule
 from django.core.files import File
 from django.db.models import Q
-from .spark.spark import *
+from services.corelib.spark import *
 from .models import *
 import requests
 import sys
-from .jobhelper import *
+from services.corelib.jobhelper import *
 from .credit.credit_core import CreditCore
 
 class SubmitJobCron(CronJobBase):
@@ -13,10 +13,6 @@ class SubmitJobCron(CronJobBase):
 
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'services.submit_job_cron' # a unique code
-
-    def getUserName(self, job):
-        #TODO: get username from database with user id
-        return job.user.username
 
     def do(self):
         log = open('/submit-out', 'a+')
@@ -35,7 +31,7 @@ class SubmitJobCron(CronJobBase):
 
         try:
             Spark.submitJob(
-                self.getUserName(job), 
+                job.user.username, 
                 job.job_id,
                 job.entry_file,
                 job.libs,

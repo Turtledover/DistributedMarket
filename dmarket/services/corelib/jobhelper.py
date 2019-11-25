@@ -1,6 +1,6 @@
-from .spark.spark import *
+from services.corelib.spark import *
 from django.db.models import Q
-from .models import Machine
+from services.models import Machine
 from html.parser import HTMLParser
 import sys
 
