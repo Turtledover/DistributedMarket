@@ -14,8 +14,8 @@ apt-get install openjdk-8-jdk curl scala openssh-server -y
 HADOOP_VERSION="3.0.0"
 { echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64"; \
   echo "HADOOP_HOME=/usr/local/hadoop"; \
-  echo "HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop"; \
-  echo "PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin"; \
+  echo "HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop"; \
+  echo "PATH=$PATH:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin"; \
   echo "HDFS_NAMENODE_USE=root"; \
   echo "HDFS_DATANODE_USER=root"; \
   echo "HDFS_SECONDARYNAMENODE_USER=root"; \
