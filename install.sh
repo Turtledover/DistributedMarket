@@ -7,8 +7,8 @@
 # - scala/
 
 # Install the required packages
-sudo apt-get update
-sudo apt-get install openjdk-8-jdk curl scala openssh-server -y
+apt-get update
+apt-get install openjdk-8-jdk curl scala openssh-server -y
 
 # Set up the environment for Hadoop & Yarn
 HADOOP_VERSION="3.0.0"
@@ -58,13 +58,13 @@ chmod +x /launch-master.sh
 chmod +x /etc/profile.d/02_env.sh
 
 # Install Tensorflow & TensorflowOnSpark
-sudo apt-get install python3-pip zip -y \
+apt-get install python3-pip zip -y
 pip3 install tensorflow tensorflowonspark==1.4.4
 { echo "PYSPARK_PYTHON=/usr/bin/python3.6"; \
   echo "LIB_HDFS=/usr/local/hadoop/lib/native"; \
   echo "LIB_JVM=$JAVA_HOME/jre/lib/amd64/server"; \
-  echo "LD_LIBRARY_PATH ${LIB_HDFS}:${LIB_JVM}"; \
-  echo "SPARK_YARN_USER_ENV PYSPARK_PYTHON=/usr/bin/python3.6"; \
+  echo "LD_LIBRARY_PATH=${LIB_HDFS}:${LIB_JVM}"; \
+  echo "SPARK_YARN_USER_ENV=PYSPARK_PYTHON=/usr/bin/python3.6"; \
   echo "CLASSPATH=$(hadoop classpath --glob)"; } >> /etc/environment
 source /etc/environment
 
@@ -75,11 +75,11 @@ pip3 install Django==2.1.* \
   && pip3 install -U python-dotenv \
   && pip3 install psutil \
   && pip3 install requests
-sudo apt-get install -y cron
+apt-get install -y cron
 cp conf/cron/services.cron /etc/cron.d/
 chmod 0644 /etc/cron.d/services.cron \
   crontab /etc/cron.d/services.cron
 
 # Install the PostgreSQL
-sudo apt-get install libpq-dev postgresql postgresql-contrib -y
+apt-get install libpq-dev postgresql postgresql-contrib -y
 sudo -u postgresql psql
