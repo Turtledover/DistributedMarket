@@ -8,7 +8,7 @@ start-yarn.sh
 if [ ! -f /firstlaunch ]; then
     hdfs dfs -mkdir /shared
     hdfs dfs -mkdir /shared/log
-    hdfs dfs -chmod 777 /shared/log/ # TODO: temporary
+    hdfs dfs -chmod 777 /shared/log/
     
     hdfs dfs -mkdir /tmp
     hdfs dfs -chmod -R 1777 /tmp

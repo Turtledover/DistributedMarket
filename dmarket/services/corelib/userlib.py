@@ -34,28 +34,28 @@ class UserLib:
             os.system('userdel -r ' + username)
             return False
 
-        cmd = 'hdfs dfs -mkdir /shared/log/{0}'.format(username)
-        ret = os.system(cmd)
-        if ret != 0:
-            print('Fail cmd: ' + cmd, file=sys.stderr)
-            os.system('hdfs dfs -rm -r /user/' + username)
-            os.system('userdel -r ' + username)
-            return False
+        # cmd = 'hdfs dfs -mkdir /shared/log/{0}'.format(username)
+        # ret = os.system(cmd)
+        # if ret != 0:
+        #     print('Fail cmd: ' + cmd, file=sys.stderr)
+        #     os.system('hdfs dfs -rm -r /user/' + username)
+        #     os.system('userdel -r ' + username)
+        #     return False
 
-        cmd = 'hdfs dfs -chown {0}:{0} /shared/log/{0}'.format(username)
-        ret = os.system(cmd)
-        if ret != 0:
-            print('Fail cmd: ' + cmd, file=sys.stderr)
-            os.system('hdfs dfs -rm -r /shared/log' + username)
-            os.system('hdfs dfs -rm -r /user/' + username)
-            os.system('userdel -r ' + username)
-            return False
+        # cmd = 'hdfs dfs -chown {0}:{0} /shared/log/{0}'.format(username)
+        # ret = os.system(cmd)
+        # if ret != 0:
+        #     print('Fail cmd: ' + cmd, file=sys.stderr)
+        #     os.system('hdfs dfs -rm -r /shared/log' + username)
+        #     os.system('hdfs dfs -rm -r /user/' + username)
+        #     os.system('userdel -r ' + username)
+        #     return False
 
         cmd = 'hdfs dfsadmin -refreshUserToGroupsMappings'
         ret = os.system(cmd)
         if ret != 0:
             print('Fail cmd: ' + cmd, file=sys.stderr)
-            os.system('hdfs dfs -rm -r /shared/log' + username)
+            # os.system('hdfs dfs -rm -r /shared/log' + username)
             os.system('hdfs dfs -rm -r /user/' + username)
             os.system('userdel -r ' + username)
             return False
