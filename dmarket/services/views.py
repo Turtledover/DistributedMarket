@@ -158,6 +158,12 @@ def remove_machine(request):
         history.user = request.user
         history.save()
         machine.delete()
+    rm_commands = [
+        ['rm', '-rf', '/usr/local/spark'],
+        ['rm', '-rf', '/usr/local/hadoop'],
+    ]
+    for rm_command in rm_commands:
+        subprocess.Popen(rm_command).wait()
 
     return render(request, 'general_status.json', context, 
         content_type='application/json')
