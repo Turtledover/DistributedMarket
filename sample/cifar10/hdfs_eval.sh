@@ -23,3 +23,7 @@ hdfs:///user/root/cifar/input/code/cifar10_eval.py \
 --checkpoint_dir hdfs:///user/root/cifar/output/train \
 --eval_dir hdfs:///user/root/cifar/output/eval/ \
 --run_once
+
+# Entry: hdfs:///user/test/cifar/input/code/cifar10_eval.py
+# Lib: hdfs:///user/test/cifar/input/code/cifar10.zip
+# Params: --data_dir hdfs:///user/test/cifar/input/data/ --checkpoint_dir hdfs:///user/test/cifar/output/train --eval_dir hdfs:///user/test/cifar/output/eval/ --run_once

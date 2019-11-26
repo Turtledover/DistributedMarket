@@ -1,11 +1,11 @@
 #!/bin/bash
 
-hadoop fs -mkdir /user
-hadoop fs -mkdir /user/root/
-hadoop fs -mkdir /user/root/cifar
-hadoop fs -mkdir /user/root/cifar/input
-hadoop fs -mkdir /user/root/cifar/input/data
-hadoop fs -copyFromLocal code/ /user/root/cifar/input/
-hadoop fs -copyFromLocal data/cifar-10-batches-bin /user/root/cifar/input/data/
+hdfs dfs -mkdir /user
+hdfs dfs -mkdir /user/root/
+hdfs dfs -mkdir /user/root/cifar
+hdfs dfs -mkdir /user/root/cifar/input
+hdfs dfs -mkdir /user/root/cifar/input/data
+hdfs dfs -copyFromLocal code/ /user/root/cifar/input/
+hdfs dfs -copyFromLocal data/cifar-10-batches-bin /user/root/cifar/input/data/
 
-hadoop fs -mkdir /user/root/cifar/output
+hdfs dfs -mkdir /user/root/cifar/output

@@ -1,4 +1,3 @@
-# set environment variables (if not already done)
 ${SPARK_HOME}/bin/spark-submit \
 --master yarn \
 --deploy-mode cluster \
@@ -22,3 +21,9 @@ hdfs:///user/root/cifar/input/code/cifar10_train.py \
 --data_dir hdfs:///user/root/cifar/input/data/ \
 --train_dir hdfs:///user/root/cifar/output/train \
 --max_steps 50
+
+
+# Entry: hdfs:///user/test/cifar/input/code/cifar10_train.py
+# Libs: hdfs:///user/test/cifar/input/code/cifar10.zip
+# Params: --data_dir hdfs:///user/test/cifar/input/data/ --train_dir hdfs:///user/test/cifar/output/train --max_steps 50
+
