@@ -126,6 +126,7 @@ dmypy.json
 
 # Application specific
 .DS_Store
-sample/mnist
+sample/mnist/mnist
+sample/cifar10/data
 .idea/
 dmarket/medias

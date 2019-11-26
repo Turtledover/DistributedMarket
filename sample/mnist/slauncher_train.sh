@@ -1,6 +1,6 @@
 scala \
 -classpath $SPARK_HOME/jars/spark-launcher_2.11-2.4.4.jar \
-/scala/main.scala \
+/scala/dmlauncher.jar \
 --entry "hdfs:///user/root/mnist/input/code/spark/mnist_spark.py" \
 --py-files "hdfs:///user/root/mnist/input/code/spark/mnist_dist.py" \
 --jobid 1 \
