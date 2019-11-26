@@ -19,11 +19,11 @@ HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
   echo "HADOOP_HOME=${HADOOP_HOME}"; \
   echo "HADOOP_CONF_DIR=${HADOOP_CONF_DIR}"; \
   echo "PATH=$PATH:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin"; \
-  echo "HDFS_NAMENODE_USER=root"; \
-  echo "HDFS_DATANODE_USER=root"; \
-  echo "HDFS_SECONDARYNAMENODE_USER=root"; \
-  echo "YARN_RESOURCEMANAGER_USER=root"; \
-  echo "YARN_NODEMANAGER_USER=root"; } >> /etc/environment
+  echo "HDFS_NAMENODE_USER=\"root\""; \
+  echo "HDFS_DATANODE_USER=\"root\""; \
+  echo "HDFS_SECONDARYNAMENODE_USER=\"root\""; \
+  echo "YARN_RESOURCEMANAGER_USER=\"root\""; \
+  echo "YARN_NODEMANAGER_USER=\"root\""; } >> /etc/environment
 source /etc/environment
 # Install Hadoop
 curl -sL --retry 3 \
