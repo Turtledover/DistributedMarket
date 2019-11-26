@@ -25,6 +25,15 @@ HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
   echo "YARN_RESOURCEMANAGER_USER=\"root\""; \
   echo "YARN_NODEMANAGER_USER=\"root\""; } >> /etc/environment
 source /etc/environment
+export JAVA_HOME=${JAVA_HOME}
+export HADOOP_HOME=${HADOOP_HOME}
+export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+export PATH=$PATH:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
+export HDFS_NAMENODE_USER=root
+export HDFS_DATANODE_USER=root
+export HDFS_SECONDARYNAMENODE_USER=root
+export YARN_RESOURCEMANAGER_USER=root
+export YARN_NODEMANAGER_USER=root
 # Install Hadoop
 curl -sL --retry 3 \
   "http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" \
