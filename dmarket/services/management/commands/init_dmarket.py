@@ -11,13 +11,14 @@ import os
 import subprocess
 import xml.etree.ElementTree as ET
 
+
 class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('-email', required=False)
         parser.add_argument('-password', required=False)
-        parser.add_argument('-cpu_cores', required=False)
-        parser.add_argument('-memory_size', required=False)
+        parser.add_argument('-cpu_cores', type=int, required=False)
+        parser.add_argument('-memory_size', type=int, required=False)
 
     def handle(self, *args, **options):
         existing_users = User.objects.filter(username='admin')
