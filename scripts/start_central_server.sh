@@ -1,7 +1,7 @@
 #!/bin/bash
 
 /etc/init.d/ssh start
-$SPARK_HOME/sbin/stop-history-server.sh
+${SPARK_HOME}/sbin/stop-history-server.sh
 stop-yarn.sh
 stop-dfs.sh
 start-dfs.sh
@@ -24,6 +24,6 @@ if [ ! -f firstlaunch ]; then
     rm dmarket/medias/id_rsa.pub
     touch firstlaunch
 fi
-$SPARK_HOME/sbin/start-history-server.sh --properties-file $SPARK_HOME/conf/spark-defaults.conf
+${SPARK_HOME}/sbin/start-history-server.sh --properties-file ${SPARK_HOME}/conf/spark-defaults.conf
 cron
 python3 dmarket/manage.py runserver 0.0.0.0:8000

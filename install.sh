@@ -70,7 +70,7 @@ LIB_JVM="${JAVA_HOME}/jre/lib/amd64/server"
   echo "LIB_HDFS=${LIB_HDFS}"; \
   echo "LIB_JVM=${LIB_JVM}"; \
   echo "LD_LIBRARY_PATH=${LIB_HDFS}:${LIB_JVM}"; \
-  echo "SPARK_YARN_USER_ENV=PYSPARK_PYTHON=/usr/bin/python3.6"; \
+  echo "SPARK_YARN_USER_ENV=\"PYSPARK_PYTHON=/usr/bin/python3.6\""; \
   echo "CLASSPATH=$(hadoop classpath --glob)"; } >> /etc/environment
 source /etc/environment
 
