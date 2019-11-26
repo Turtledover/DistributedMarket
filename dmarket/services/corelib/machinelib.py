@@ -57,7 +57,7 @@ class MachineLib:
         if machine_op == MachineLib.MachineOp.ADD:
             hadoop_workers.add(machine_host)
         elif machine_op == MachineLib.MachineOp.REMOVE:
-            hadoop_workers.remove(machine_host)
+            hadoop_workers.discard(machine_host)
         MachineLib.write_set_to_conf(hadoop_workers_path, hadoop_workers)
 
         spark_slaves_path = os.path.join(os.environ['SPARK_HOME'], 'conf/slaves')
@@ -65,5 +65,5 @@ class MachineLib:
         if machine_op == MachineLib.MachineOp.ADD:
             spark_slaves.add(machine_host)
         elif machine_op == MachineLib.MachineOp.REMOVE:
-            spark_slaves.remove(machine_host)
+            spark_slaves.discard(machine_host)
         MachineLib.write_set_to_conf(spark_slaves_path, spark_slaves)
