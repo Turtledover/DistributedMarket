@@ -50,9 +50,13 @@ class Command(BaseCommand):
 
         core_num = os.cpu_count()
         memory_size = psutil.virtual_memory().total
-        # TODO Get the real ip address
-        hostname = socket.gethostname()
-        ip_address = socket.gethostbyname(hostname)
+        # The way to get the ip address of the user machine is cited from https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+        # begin
+        my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        my_socket.connect(("8.8.8.8", 80))
+        ip_address = my_socket.getsockname()[0]
+        my_socket.close()
+        # end
         public_key = File(open(os.path.join(settings.MEDIA_ROOT, Constants.MASTER_PUBKEY_PATH)))
         public_key.name = Constants.MASTER_PUBKEY_PATH
         master = Machine(ip_address=ip_address, memory_size=memory_size, core_num=core_num,
