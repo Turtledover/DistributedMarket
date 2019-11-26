@@ -25,15 +25,6 @@ HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
   echo "YARN_RESOURCEMANAGER_USER=\"root\""; \
   echo "YARN_NODEMANAGER_USER=\"root\""; } >> /etc/environment
 source /etc/environment
-export JAVA_HOME=${JAVA_HOME}
-export HADOOP_HOME=${HADOOP_HOME}
-export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
-export PATH=$PATH:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
-export HDFS_NAMENODE_USER=root
-export HDFS_DATANODE_USER=root
-export HDFS_SECONDARYNAMENODE_USER=root
-export YARN_RESOURCEMANAGER_USER=root
-export YARN_NODEMANAGER_USER=root
 # Install Hadoop
 curl -sL --retry 3 \
   "http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" \
@@ -55,8 +46,6 @@ SPARK_HOME="/usr/local/spark"
 { echo "SPARK_HOME=${SPARK_HOME}"; \
   echo "PATH=$PATH:${SPARK_HOME}/bin"; } >> /etc/environment
 source /etc/environment
-export SPARK_HOME=${SPARK_HOME}
-export PATH=$PATH:${SPARK_HOME}/bin
 # Install Spark
 curl -sL --retry 3 \
   "https://www-us.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_PACKAGE}.tgz" \
@@ -84,13 +73,6 @@ LIB_JVM="${JAVA_HOME}/jre/lib/amd64/server"
   echo "SPARK_YARN_USER_ENV=\"PYSPARK_PYTHON=/usr/bin/python3.6\""; \
   echo "CLASSPATH=$(hadoop classpath --glob)"; } >> /etc/environment
 source /etc/environment
-export PYSPARK_PYTHON=/usr/bin/python3.6
-export LIB_HDFS=${LIB_HDFS}
-export LIB_JVM=${LIB_JVM}
-export LD_LIBRARY_PATH=${LIB_HDFS}:${LIB_JVM}
-export SPARK_YARN_USER_ENV="PYSPARK_PYTHON=/usr/bin/python3.6"
-CLASSPATH=$(hadoop classpath --glob)
-export CLASSPATH
 
 # Install other dependencies
 pip3 install Django==2.1.* \
