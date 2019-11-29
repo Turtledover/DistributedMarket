@@ -3,6 +3,7 @@ import threading
 import os
 import sys
 import requests
+from django.conf import settings
 
 class Spark:
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
@@ -113,7 +114,7 @@ class Spark:
         command = [
             '/usr/bin/scala',
             '-classpath', os.environ['SPARK_HOME'] + '/jars/spark-launcher_2.11-2.4.4.jar',
-            '/scala/dmlauncher-assembly-1.0.jar',
+            settings.DMLAUNCHER_PATH, #'/scala/dmlauncher-assembly-1.0.jar',
             '--entry', entry,
             '--jobid', str(jobId)
         ]

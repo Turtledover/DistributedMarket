@@ -6,8 +6,8 @@ import org.postgresql.Driver
 class DMJobsDB {
     var conn : Connection = null
     def connect() {
-        val con_str = "jdbc:postgresql://db:5432/postgres?user=postgres"
-        conn = DriverManager.getConnection(con_str)
+        val con_str = "jdbc:postgresql://db:5432/postgres"
+        conn = DriverManager.getConnection(con_str, "postgres", "123456")
     }
 
     def close() {

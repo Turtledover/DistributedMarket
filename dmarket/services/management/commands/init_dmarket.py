@@ -8,6 +8,7 @@ import getpass
 import socket
 import psutil
 import os
+import sys
 import subprocess
 import xml.etree.ElementTree as ET
 
@@ -43,6 +44,7 @@ class Command(BaseCommand):
         self.create_machine(adminUser, options['cpu_cores'], options['memory_size'])
 
     def update_yarn_config(self, memory_limit, cpu_cores_limit):
+        print('update_yarn_config')
         subprocess.Popen(['stop-yarn.sh']).wait()
         # https://docs.python.org/3.7/library/xml.etree.elementtree.html#module-xml.etree.ElementTree
         # begin
@@ -76,7 +78,8 @@ class Command(BaseCommand):
         if len(Machine.objects.filter(hostname=Constants.MASTER_HOST)) > 0:
             # Could not happen
             raise
-
+        print('print stdout')
+        print('print stderr', file=sys.stderr)
         core_limit = os.cpu_count()
         if cpu_cores is None:
             cpu_cores = core_limit
