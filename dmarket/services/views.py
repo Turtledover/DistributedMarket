@@ -330,6 +330,8 @@ def get_job_list(request):
         retj['duration'] = j.duration
         retj['added'] = j.added_time
         result['jobs'].append(retj)
+    
+    result['jobs'].sort(key=lambda x: x['added'], reverse=True)
 
     context['status'] = True
     context['error_code'] = 0
