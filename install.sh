@@ -10,6 +10,10 @@
 apt-get update
 apt-get install openjdk-8-jdk curl scala openssh-server -y
 
+BASEDIR=$(dirname "$0")
+DMARKET_ROOT="${BASEDIR}/dmarket"
+echo "DMARKET_ROOT" >> /etc/environment
+
 # Set up the environment for Hadoop & Yarn
 JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
 HADOOP_VERSION="3.0.0"

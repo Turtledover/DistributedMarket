@@ -1,5 +1,7 @@
 FROM hadoop-spark-test
 
+ENV DMARKET_ROOT /dmarket
+
 COPY conf/spark/spark-defaults.conf /usr/local/spark/conf/
 
 RUN pip3 install Django==2.1.* \
