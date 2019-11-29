@@ -10,7 +10,7 @@
 apt-get update
 apt-get install openjdk-8-jdk curl scala openssh-server -y
 
-BASEDIR=$(dirname "$0")
+BASEDIR="$(cd "$(dirname "$0")" ; pwd -P)"
 DMARKET_ROOT="${BASEDIR}/dmarket"
 { echo "DMARKET_ROOT=$DMARKET_ROOT"; } >> /etc/environment
 
