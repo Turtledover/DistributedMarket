@@ -20,7 +20,7 @@ if [ ! -f firstlaunch ]; then
     python3 dmarket/manage.py migrate
     mkdir dmarket/medias
     cp /root/.ssh/id_rsa.pub dmarket/medias/
-    python3 dmarket/manage.py init_dmarket -email admin@admin.com -password 1234 -cpu_cores 2 -memory_size 2048
+    python3 dmarket/manage.py init_dmarket -email admin@admin.com -password 1234
     rm dmarket/medias/id_rsa.pub
     touch firstlaunch
 fi
