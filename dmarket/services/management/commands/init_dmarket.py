@@ -87,9 +87,9 @@ class Command(BaseCommand):
             assert 1 <= cpu_cores <= core_limit
         memory_limit = psutil.virtual_memory().total
         if memory_size is None:
-            memory_size = memory_limit//1024/1024
+            memory_size = int(memory_limit//1024/1024)
         else:
-            assert 1024 <= memory_size <= memory_limit//1024/1024
+            assert 1024 <= memory_size <= int(memory_limit//1024/1024)
         self.update_yarn_config(memory_size, cpu_cores)
         # The way to get the ip address of the user machine is cited from
         # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib

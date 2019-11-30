@@ -32,7 +32,7 @@ class Machine(models.Model):
     ip_address = models.CharField(max_length=64, default='127.0.0.1', blank=True)
     core_num = models.IntegerField(default=1, blank=True)
     memory_size = models.FloatField(null=True)
-    start_time = models.DateTimeField(default=timezone.now())
+    start_time = models.DateTimeField(default=timezone.now)
     time_period = models.IntegerField(null=True)
     available = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
