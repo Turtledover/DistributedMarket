@@ -91,6 +91,7 @@ class ScanFinishedJobCron(CronJobBase):
         print('used_credit=' + str(used_credit), file=sys.stderr)
         job.start_time = start_time
         job.end_time = end_time
+        job.duration = (end_time - start_time) / 1000 # Make it seconds
         job.used_credits = used_credit
         if job.status == 'finished':
             job.status = 'completed'
