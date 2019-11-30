@@ -55,7 +55,7 @@ class ScanFinishedJobCron(CronJobBase):
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
 
     def do(self):
-        jobs = Job.objects.filter(Q(status='finished') | Q(status='failed'))
+        jobs = Job.objects.filter(Q(status='finished') | Q(status='failed') | Q(status='killed'))
 
         for j in jobs:
             self.complete_job(j)
@@ -72,7 +72,7 @@ class ScanFinishedJobCron(CronJobBase):
         app = Spark.get_spark_app(spark_id)
         print(app, file=sys.stderr)
         if app is None or not 'attempts' in app:
-            if job.status == 'failed':
+            if job.status == 'failed' or job.status == 'killed':
                 self.update_submit_fail_job(job)
             return
 
@@ -95,6 +95,8 @@ class ScanFinishedJobCron(CronJobBase):
         job.used_credits = used_credit
         if job.status == 'finished':
             job.status = 'completed'
+        elif job.status == 'killed':
+            job.status = 'kill_completed'
         else:
             job.status = 'fail_completed'
         job.save()
@@ -102,6 +104,9 @@ class ScanFinishedJobCron(CronJobBase):
 
     def update_submit_fail_job(self, job):
         job.used_credits = 0
-        job.status = 'fail_completed'
+        if job.status == 'killed':
+            job.status = 'kill_completed'
+        else:
+            job.status = 'fail_completed'
         job.save()
         return
