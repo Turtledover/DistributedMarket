@@ -1,3 +1,5 @@
+# Steps of commands to create User in linux and HDFS
+
 # One time setup
 hdfs dfs -mkdir /tmp
 hdfs dfs -chmod -R 1777 /tmp

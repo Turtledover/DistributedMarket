@@ -1,5 +1,5 @@
 if [ "$1" == "" ] || [ "$2" == ""]; then
-    echo "Usage: hdfs_mnist_data_convert.sh <username> <command>"
+    echo "Usage: runas.sh <username> <command>"
     exit 1
 fi
 
