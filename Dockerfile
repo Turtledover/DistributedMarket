@@ -12,6 +12,6 @@ RUN pip3 install Django==2.1.* \
     && pip3 install requests
 
 RUN apt-get install -y cron
-COPY conf/cron/services.cron /etc/cron.d/
+COPY conf/cron/services_docker.cron /etc/cron.d/services.cron
 RUN chmod 0644 /etc/cron.d/services.cron \
     && crontab /etc/cron.d/services.cron

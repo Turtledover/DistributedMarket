@@ -137,7 +137,7 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'medias')
 
-DMLAUNCHER_PATH = os.path.join(os.path.dirname(BASE_DIR), 'scala', 'dmlauncher-assembly-1.0.jar')
+DMLAUNCHER_PATH = os.path.join(os.path.dirname(BASE_DIR), 'scala', 'dmlauncher.jar')
 
 CRON_CLASSES = [
     'services.cron.SubmitJobCron',
