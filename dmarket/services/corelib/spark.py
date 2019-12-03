@@ -150,6 +150,8 @@ class Spark:
 
         if appParams:
             command.extend(['--appArgs', '"' + appParams + '"'])
+        
+        command.extend(['--numexecutors', '"5"'])
 
         cmdStr = ' '.join(command)
         su.append(cmdStr)

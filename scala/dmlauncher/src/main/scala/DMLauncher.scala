@@ -44,15 +44,18 @@ object DMLauncher {
             println("Entry or JobId not provided")
             sys.exit(1)
         }
+        val numexec = options.getOrElse('numexecutors, "2")
+
         println("jobid=" + jobid)
         println("entry=" + entry)
+        println("num executors=" + numexec.toString())
         
         val countDownLatch = new CountDownLatch(1)
         val job = new SparkLauncher()
             .setMaster("yarn")
             .setDeployMode("cluster")
             .addSparkArg("--queue", "default")
-            .addSparkArg("--num-executors", "3")
+            .addSparkArg("--num-executors", numexec.toString())
             .setConf("spark.eventLog.enabled", "true")
             .setConf("spark.eventLog.dir", "hdfs://master:9000/shared/log/")
             .setConf("spark.dynamicAllocation.enabled", "false")
