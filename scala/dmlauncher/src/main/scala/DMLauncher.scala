@@ -52,7 +52,7 @@ object DMLauncher {
             .setMaster("yarn")
             .setDeployMode("cluster")
             .addSparkArg("--queue", "default")
-            .addSparkArg("--num-executor", "3")
+            .addSparkArg("--num-executors", "3")
             .setConf("spark.eventLog.enabled", "true")
             .setConf("spark.eventLog.dir", "hdfs://master:9000/shared/log/")
             .setConf("spark.dynamicAllocation.enabled", "false")
