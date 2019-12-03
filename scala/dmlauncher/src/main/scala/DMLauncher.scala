@@ -28,6 +28,8 @@ object DMLauncher {
                     nextOption(map ++ Map('appArgs -> value), tail)
                 case "--jobid" :: value :: tail =>
                     nextOption(map ++ Map('jobid -> value), tail)
+                case "--numexecutors" :: value :: tail =>
+                    nextOption(map ++ Map('numexecutors -> value), tail)
                 case option :: tail => 
                     println("Unknown option " + option) 
                     sys.exit(1)
@@ -50,6 +52,7 @@ object DMLauncher {
             .setMaster("yarn")
             .setDeployMode("cluster")
             .addSparkArg("--queue", "default")
+            .addSparkArg("--num-executor", "3")
             .setConf("spark.eventLog.enabled", "true")
             .setConf("spark.eventLog.dir", "hdfs://master:9000/shared/log/")
             .setConf("spark.dynamicAllocation.enabled", "false")
