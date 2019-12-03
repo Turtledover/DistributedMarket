@@ -38,6 +38,7 @@ from pyspark.context import SparkContext
 from pyspark.conf import SparkConf
 from tensorflowonspark import TFCluster, TFNode
 import sys
+import argparse
 
 from datetime import datetime
 import math
@@ -65,6 +66,7 @@ def main_fun(argv, ctx):
   tf.app.flags.DEFINE_boolean('run_once', False,
                            """Whether to run eval only once.""")
   tf.app.flags.DEFINE_boolean('rdma', False, """Whether to use rdma.""")
+  tf.app.flags.DEFINE_integer('cluster_size', 2, """Placeholder""")
 
   cluster_spec, server = TFNode.start_cluster_server(ctx, 1, FLAGS.rdma)
 
@@ -162,8 +164,14 @@ def main_fun(argv, ctx):
 
 if __name__ == '__main__':
   sc = SparkContext(conf=SparkConf().setAppName("cifar10_eval"))
-  num_executors = int(sc._conf.get("spark.executor.instances"))
+
+  executors = sc._conf.get("spark.executor.instances")
+  num_executors = int(executors) if executors is not None else 2
   num_ps = 0
 
-  cluster = TFCluster.run(sc, main_fun, sys.argv, num_executors, num_ps, False, TFCluster.InputMode.TENSORFLOW)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--cluster_size", help="number of nodes in the cluster", type=int, default=num_executors)
+  args, unknown = parser.parse_known_args()
+
+  cluster = TFCluster.run(sc, main_fun, sys.argv, args.cluster_size, num_ps, False, TFCluster.InputMode.TENSORFLOW)
   cluster.shutdown()

@@ -25,5 +25,5 @@ hdfs:///user/root/cifar/input/code/cifar10_train.py \
 
 # Entry: hdfs:///user/test/cifar/input/code/cifar10_train.py
 # Libs: hdfs:///user/test/cifar/input/code/cifar10.zip
-# Params: --data_dir hdfs:///user/test/cifar/input/data/ --train_dir hdfs:///user/test/cifar/output/train --max_steps 50
+# Params: --data_dir hdfs:///user/test/cifar/input/data/ --train_dir hdfs:///user/test/cifar/output/train --max_steps 50 --cluster_size 2
 

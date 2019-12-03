@@ -44,6 +44,7 @@ from datetime import datetime
 import os.path
 import sys
 import time
+import argparse
 
 def main_fun(argv, ctx):
   import tensorflow as tf
@@ -59,6 +60,7 @@ def main_fun(argv, ctx):
   tf.app.flags.DEFINE_boolean('log_device_placement', False,
                               """Whether to log device placement.""")
   tf.app.flags.DEFINE_boolean('rdma', False, """Whether to use rdma.""")
+  tf.app.flags.DEFINE_integer('cluster_size', 2, """Placeholder""")
 
   # cifar10.maybe_download_and_extract()
   if tf.gfile.Exists(FLAGS.train_dir):
@@ -122,8 +124,17 @@ def main_fun(argv, ctx):
 
 if __name__ == '__main__':
   sc = SparkContext(conf=SparkConf().setAppName("cifar10_train"))
-  num_executors = 2 #int(sc._conf.get("spark.executor.instances"))
+
+  executors = sc._conf.get("spark.executor.instances")
+  num_executors = int(executors) if executors is not None else 2
   num_ps = 0
 
-  cluster = TFCluster.run(sc, main_fun, sys.argv, num_executors, num_ps, False, TFCluster.InputMode.TENSORFLOW)
+  # num_executors = 2 #int(sc._conf.get("spark.executor.instances"))
+  # num_ps = 0
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--cluster_size", help="number of nodes in the cluster", type=int, default=num_executors)
+  args, unknown = parser.parse_known_args()
+
+  cluster = TFCluster.run(sc, main_fun, sys.argv, args.cluster_size, num_ps, False, TFCluster.InputMode.TENSORFLOW)
   cluster.shutdown()

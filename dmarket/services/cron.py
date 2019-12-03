@@ -79,8 +79,8 @@ class ScanFinishedJobCron(CronJobBase):
             if start_time == 0 or a['startTimeEpoch'] < start_time:
                 start_time = a['startTimeEpoch']
 
-            if end_time == 0 or a['endTimeEpoch'] > end_time:
-                end_time = a['endTimeEpoch']
+            if end_time == 0 or a['lastUpdatedEpoch'] > end_time:
+                end_time = a['lastUpdatedEpoch']
 
         machines = get_spark_app_machine_usage(spark_id, app)
 

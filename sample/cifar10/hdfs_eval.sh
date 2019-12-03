@@ -26,4 +26,4 @@ hdfs:///user/root/cifar/input/code/cifar10_eval.py \
 
 # Entry: hdfs:///user/test/cifar/input/code/cifar10_eval.py
 # Lib: hdfs:///user/test/cifar/input/code/cifar10.zip
-# Params: --data_dir hdfs:///user/test/cifar/input/data/ --checkpoint_dir hdfs:///user/test/cifar/output/train --eval_dir hdfs:///user/test/cifar/output/eval/ --run_once
+# Params: --data_dir hdfs:///user/test/cifar/input/data/ --checkpoint_dir hdfs:///user/test/cifar/output/train --eval_dir hdfs:///user/test/cifar/output/eval/ --run_once --cluster_size 1
