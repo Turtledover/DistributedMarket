@@ -1,37 +1,66 @@
 # DistributedMarket
-A distributed market platform designed for machine learning tasks.
+A distributed market platform designed for machine learning tasks. <br/>
+The platform consists of one central server and many number of clients. <br/>
+This repo is the central server, repo of clients could be found at <br/>
+https://github.com/Turtledover/Desktop-Application <br/>
 
-# First time setup
+# Project Structure
+- ./conf/: All configurations files for Dockerfile to build a docker image
+- ./dmarket/: Django web services with API and logic to manage machines, jobs and credits
+- ./doc/: More documentations
+- ./sample/: Sample code and data to test submitting a ML job to the system
+- ./scala/: Scala code that used by the Django services to submit job to spark and get job status
+- ./scripts/: Contain scripts that startup the system in docker as well as actual computers
+
+# Setup
+The project could be setup in docker for development as well as 
+in actual computers for deployment. Instructions to setup in each environment is 
+in the following sections.
+
+## Setup in Docker
+Follow these instructions to setup the central server, after the central server
+up, you could follow the instructions at https://github.com/Turtledover/Desktop-Application
+to connect any number of client to server.
+
+### First time setup
 1. Install docker
 2. Clone https://github.com/Turtledover/spark-hadoop-docker to a separate folder
-3. Run `./build.sh` in docker-spark folder
+3. Run `./build.sh` in spark-hadoop-docker (This will build our base docker image with hadoop, spark, tensorflow and tensorflowOnSpark)
+4. Change back to this directory, run `./build.sh` in this directory
 
-# Start the docker
+### Start the docker
 1. Run `docker-compose up` in root folder of this project
 2. You can now browse 'http://localhost:8088' for Hadoop UI and 'http://localhost:8000/services/' for Django server
 3. You can also browse 'http://localhost:18080/' for spark history server which give you previous job status
 
-# Run a job
+### Submit sample MNIST training jobs
 Currently, the system assume code and data of a job located in HDFS. <br/>
 All code and data has to be uploaded to HDFS first before it could be run. <br/>
 Run the Sample MNIST Job: <br/>
-1. Connect to docker with: `docker exec -it  distributedmarket_master_1 /bin/bash`
+1. Connect to docker with: `docker exec -it distributedmarket_master_1 /bin/bash`
 2. `cd /sample/mnist`
-3. `./hdfs_copy.sh`
-4. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
-5. Use job list API to get the job status: http://localhost:8000/services/job/list/
+3. Run `download.sh` to download the datasets (Only need to download once)
+4. `./hdfs_copy.sh`
+5. `./hdfs_mnist_data_convert.sh` to submit the job to prepare MNIST data for training
+6. `./hdfs_mnist_train.sh` to submit a job to train on MNIST datasets
+7. `./hdfs_mnist_test.sh` to submit a job to evaluate the training result 
 
-# NOTICE for testing in Docker environments (qilian branch)
+### NOTES for testing in Docker environments
 * In docker environments, the initial cluster only contains 1 master node, which serves as both the datanode and namenode in Hadoop, and both the slave node and master node in Spark. You can then add the user machine to the cluster one by one.
 * After the initial master has been launched and the desktop app has been installed:
-  1. The user who install this app should register an admin account.
-  2. After the admin account has been created, the initial master should be automatically added to the machine table.
-  3. Then other users can add their machines.
+  1. You should have default "admin" account setup. (You can change its password in ./scripts/start.sh before setup)
+  2. The initial master node should be automatically added to the machine table.
+  3. Other users can add their machines. (See https://github.com/Turtledover/Desktop-Application)
 * First cd to the root directory of this repo, and start a container by running the command `docker run -v <absolute_path_to_scripts_directory>:/scripts -it ubuntu /bin/bash`. 
 * Before the user machine is added, make sure you run the command `docker network connect distributedmarket_static-network <container_id>` so that the user machine can access other docker containers.
 * Install the python package in the new ubuntu container: `apt update && apt install python3-pip -y`.
 * Manually run the `init_worker.py` script to add user machine to the cluster.
 - TODO The subprocess.Popen() based ssh session may fail randomly.
+
+
+### Use the API
+1. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
+2. Use job list API to get the job status: http://localhost:8000/services/job/list/
 
 # DB model design
 1. User
