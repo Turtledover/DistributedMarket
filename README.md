@@ -62,6 +62,18 @@ Run the Sample MNIST Job: <br/>
 1. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
 2. Use job list API to get the job status: http://localhost:8000/services/job/list/
 
+## Setup on real machines
+Follow these instructions to setup the central server on a real machine. This will allow you to setup the DistributedMarket system on your own machines. You could follow the instructions at https://github.com/Turtledover/Desktop-Application to connect any number of client to server.
+
+### Initialize the cluster and the central server
+On the machine that you would like to use as the master server, go to the directory of the project. Execute `./install.sh` with root permission. This will automatically install required files for Spark, Hadoop, Django, Postgres and TensorFlowOnSpark. This will also setup the Spark and HDFS/YARN cluster, and setup the Django server on this machine.
+
+### Start the server
+On the central server, run `./scripts/start_central_server.sh`. This will start the Spark and HDFS/YARN cluster, and start running the Django server.
+
+### Uninstall the system
+To uninstall the system from the central server machine, run `./uninstall.sh`
+
 # DB model design
 1. User
    - User_id (uuid (random hash 32))
