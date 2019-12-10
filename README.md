@@ -5,12 +5,14 @@ This repo is the central server, repo of clients could be found at <br/>
 https://github.com/Turtledover/Desktop-Application <br/>
 
 # Project Structure
-- ./conf/: All configurations files for Dockerfile to build a docker image
-- ./dmarket/: Django web services with API and logic to manage machines, jobs and credits
-- ./doc/: More documentations
-- ./sample/: Sample code and data to test submitting a ML job to the system
-- ./scala/: Scala code that used by the Django services to submit job to spark and get job status
-- ./scripts/: Contain scripts that startup the system in docker as well as actual computers
+* ./conf/: All configurations files for Dockerfile to build a docker image
+* ./dmarket/: Django web services with API and logic to manage machines, jobs and credits
+  * services/views.py: Entry function for all APIs.
+  * services/cron.py: Function that run periodically by cron.
+* ./doc/: More documentations
+* ./sample/: Sample code and data to test submitting a ML job to the system
+* ./scala/: Scala code that used by the Django services to submit job to spark and get job status
+* ./scripts/: Contain scripts that startup the system in docker as well as actual computers
 
 # Setup
 The project could be setup in docker for development as well as 
@@ -74,6 +76,11 @@ On the central server, start a new terminal and run `sudo su`. And then, go to t
 To uninstall the system from the central server machine, 
 1. run `./uninstall.sh`
 2. Edit /etc/hosts and remove all entries of slave hosts. (Only applicable when you have added any machines)
+
+# Troubleshooting
+1. FileNotFoundError: No such file or directory: 'executor_id' when running MNIST training sample
+   - Currently, the number of executors used by Spark is hardcoded as 5 in the file dmarket/services/corelib/spark.py. Set "--cluster_size" parameter for the application to 4 may help, or else do not set the "--cluster_size" parameter at all.
+   
 
 # DB model design
 1. User
