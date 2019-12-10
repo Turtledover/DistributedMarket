@@ -51,12 +51,6 @@ Run the Sample MNIST Job: <br/>
   1. You should have default "admin" account setup. (You can change its password in ./scripts/start.sh before setup)
   2. The initial master node should be automatically added to the machine table.
   3. Other users can add their machines. (See https://github.com/Turtledover/Desktop-Application)
-* First cd to the root directory of this repo, and start a container by running the command `docker run -v <absolute_path_to_scripts_directory>:/scripts -it ubuntu /bin/bash`. 
-* Before the user machine is added, make sure you run the command `docker network connect distributedmarket_static-network <container_id>` so that the user machine can access other docker containers.
-* Install the python package in the new ubuntu container: `apt update && apt install python3-pip -y`.
-* Manually run the `init_worker.py` script to add user machine to the cluster.
-- TODO The subprocess.Popen() based ssh session may fail randomly.
-
 
 ### Use the API
 1. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
@@ -66,13 +60,20 @@ Run the Sample MNIST Job: <br/>
 Follow these instructions to setup the central server on a real machine. This will allow you to setup the DistributedMarket system on your own machines. You could follow the instructions at https://github.com/Turtledover/Desktop-Application to connect any number of client to server.
 
 ### Initialize the cluster and the central server
-On the machine that you would like to use as the master server, go to the directory of the project. Execute `./install.sh` with root permission. This will automatically install required files for Spark, Hadoop, Django, Postgres and TensorFlowOnSpark. This will also setup the Spark and HDFS/YARN cluster, and setup the Django server on this machine.
+On the machine that you would like to use as the master server,
+1. First, run `ifconfig` to get the IP address of your computer.
+2. Add the following two entries in /etc/hosts
+   - [your ip]  master
+   - 127.0.0.1  db
+3. Go to the directory of the project, execute `sudo su` and then `./install.sh` with root permission. This will automatically install required files for Spark, Hadoop, Django, Postgres and TensorFlowOnSpark. This will also setup the Spark and HDFS/YARN cluster, and setup the Django server on this machine.
 
 ### Start the server
-On the central server, run `./scripts/start_central_server.sh`. This will start the Spark and HDFS/YARN cluster, and start running the Django server.
+On the central server, start a new terminal and run `sudo su`. And then, go to this directory, run `./scripts/start_central_server.sh`. This will start the Spark and HDFS/YARN cluster, and start running the Django server.
 
 ### Uninstall the system
-To uninstall the system from the central server machine, run `./uninstall.sh`
+To uninstall the system from the central server machine, 
+1. run `./uninstall.sh`
+2. Edit /etc/hosts and remove all entries of slave hosts. (Only applicable when you have added any machines)
 
 # DB model design
 1. User
