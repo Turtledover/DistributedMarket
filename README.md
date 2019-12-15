@@ -80,7 +80,18 @@ To uninstall the system from the central server machine,
 # Troubleshooting
 1. FileNotFoundError: No such file or directory: 'executor_id' when running MNIST training sample
    - Currently, the number of executors used by Spark is hardcoded as 5 in the file dmarket/services/corelib/spark.py. Set "--cluster_size" parameter for the application to 4 may help, or else do not set the "--cluster_size" parameter at all.
-   
+
+# DMLauncher
+Under ./scala folder, there is a dmlauncher project. 
+DMLauncher is a small program that update Spark application status in database.
+It is used by the the Django service to submit application to Spark cluster.
+
+## Update DMlauncher
+1. Install SBT builds tools. For ubuntu user, you could use './scala/install_sbt.sh' to install it.
+2. `cd ./scala/dmlauncher`
+3. Run `sbt assembly` to build a standalone jar
+4. Run `cp target/scala-2.11/dmlauncher-assembly-1.0.jar ../dmlauncher.jar` to copy the updated jar to scala folder.
+5. The Django service would use the updated DMLauncher now.
 
 # DB model design
 1. User
