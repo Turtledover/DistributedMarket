@@ -28,7 +28,7 @@ from services.corelib.jobhelper import *
 ##### User API #####
 @login_required
 def index(request):
-    return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
+    return HttpResponse("Hello User {}, world. Distributed Market .".format(request.user.id))
 
 
 # https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -120,7 +120,64 @@ def submit_machine(request):
     return JsonResponse({'public_keys': public_keys,
                          'host_ip_mapping': host_ip_mapping,
                          'premium_rate': format(premium_rate, '.0%')}, safe=False)
+def test_remove_machine(request):
+    machines = Machine.objects.filter(machine_id=int(request.GET.get('machine_id')))
+    context = {}
+    if not machines:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'The requested machine does not exist.'
+        return render(request, 'general_status.json', context,
+                      content_type='application/json')
+    
+    machine = machines[0]
+    print("machine.hostname", machine.hostname)
+    ssh_session = subprocess.Popen(
+        ['ssh', '-o', 'StrictHostKeyChecking=no', machine.hostname],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    ssh_session.stdin.write(
+        "/usr/local/hadoop/bin/yarn --daemon stop nodemanager\n".encode('utf-8'))
+    
+    ssh_session.stdin.write(
+        "/usr/local/hadoop/bin/hdfs --daemon stop datanode\n".encode('utf-8'))
+    context['message'] = ssh_session.stdout
+    ssh_session.stdin.close()
+    MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.REMOVE)
+    context['status'] = True
+    context['error_code'] = 0
+    return render(request, 'general_status.json', context,
+                    content_type='application/json')
 
+def test_add_machine(request):
+    machines = Machine.objects.filter(machine_id=int(request.GET.get('machine_id')))
+    context = {}
+    if not machines:
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'The requested machine does not exist.'
+        return render(request, 'general_status.json', context,
+                      content_type='application/json')
+    
+    machine = machines[0]
+    ssh_session = subprocess.Popen(
+        ['ssh', '-o', 'StrictHostKeyChecking=no', machine.hostname],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    ssh_session.stdin.write("echo 'test' > test.txt\n".encode('utf-8'))
+    ssh_session.stdin.write(
+        "/usr/local/hadoop/bin/yarn --daemon start nodemanager\n".encode('utf-8'))
+    ssh_session.stdin.write(
+        "/usr/local/hadoop/bin/hdfs --daemon start datanode\n".encode('utf-8'))
+    context['message'] = ssh_session.stdout
+    ssh_session.stdin.close()
+    MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.ADD)
+    context['status'] = True
+    context['error_code'] = 0
+    return render(request, 'general_status.json', context,
+                    content_type='application/json')
 
 @login_required
 def remove_machine(request):
