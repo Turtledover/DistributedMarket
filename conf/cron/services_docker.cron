@@ -1,1 +1,1 @@
-* * * * * . /etc/profile.d/02_env.sh; python3 /dmarket/manage.py runcrons
+* * * * * . /etc/profile.d/02_env.sh; python3 /dmarket/manage.py runcrons >> /tmp/cron.log 2>&1

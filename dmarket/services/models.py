@@ -43,6 +43,15 @@ class Machine(models.Model):
         return ', '.join([str(self.machine_id), str(self.ip_address), str(self.core_num), str(self.memory_size),
                           str(self.time_period), str(self.public_key)])
 
+class MachineInterval(models.Model):
+    machine_interval_id = models.AutoField(primary_key=True)
+    machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
+    start_time = models.TimeField() 
+    end_time = models.TimeField()
+    status = models.CharField(max_length=40, default='Down', blank=True)   # Down, Up
+    def __str__(self):
+        return ', '.join([str(self.machine_interval_id), str(self.machine_id), str(self.start_time), str(self.end_time), str(self.status)])
+
 class HistoryMachine(models.Model):
     history_id = models.AutoField(primary_key=True)
 

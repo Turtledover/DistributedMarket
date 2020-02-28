@@ -3,6 +3,7 @@ import psutil
 import os
 import socket
 import datetime
+from datetime import timedelta
 import sys
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
@@ -87,8 +88,14 @@ def submit_machine(request):
         premium_rate = CreditCore.get_price(request)
         new_machine.premium_rate = premium_rate
         new_machine.save()
+        
+        
         MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
-
+        # if data['ip_address']
+        from django.utils.timezone import now, localtime
+        machine_interval = MachineInterval(machine = new_machine, start_time = (localtime() + timedelta(minutes = 3)).time(), end_time = (localtime() + timedelta(minutes = 4)).time(), status="Up")
+        machine_interval.save()
+        print("machine_interval", machine_interval)
         # Add the public key to the authorized keys of the master node
         with open('/root/.ssh/authorized_keys', 'a') as f:
             f.write(new_machine.public_key.read().decode())

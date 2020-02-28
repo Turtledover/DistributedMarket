@@ -141,7 +141,9 @@ DMLAUNCHER_PATH = os.path.join(os.path.dirname(BASE_DIR), 'scala', 'dmlauncher.j
 
 CRON_CLASSES = [
     'services.cron.SubmitJobCron',
-    'services.cron.ScanFinishedJobCron'
+    'services.cron.ScanFinishedJobCron',
+    'services.cron.ScanAddMachine',
+    'services.cron.ScanRemoveMachine'
 ]
 
 LOGGING = {
