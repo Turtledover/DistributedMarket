@@ -53,6 +53,7 @@ Run the Sample MNIST Job: <br/>
   1. You should have default "admin" account setup. (You can change its password in ./scripts/start.sh before setup)
   2. The initial master node should be automatically added to the machine table.
   3. Other users can add their machines. (See https://github.com/Turtledover/Desktop-Application)
+* Make sure the virtual memory updated in Docker is at least 4 GB RAM which will be required to run the jobs. This can be updated by Preferences -> Resources -> Update memory to 4 GB.
 
 ### Use the API
 1. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
