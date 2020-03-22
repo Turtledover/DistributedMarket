@@ -92,22 +92,23 @@ def submit_machine(request):
         
         MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
         # if data['ip_address']
-        from django.utils.timezone import now, localtime
-        import time
-        from datetime import datetime
-        # "%a %b %d %H:%M:%S %Y"
-        print('start time: ', data['start_time'], 'end time: ', data['end_time'], file=sys.stderr)
-        start_time = time.strptime(data['start_time'], "%H:%M:%S")
-        start_time = datetime.fromtimestamp(time.mktime(start_time)).time()
-        end_time = time.strptime(data['end_time'], "%H:%M:%S")
-        end_time = datetime.fromtimestamp(time.mktime(end_time)).time()
-        print('start time struct', start_time, file=sys.stderr)
-        print('local time', localtime(), file=sys.stderr)
-        
-        # machine_interval = MachineInterval(machine = new_machine, start_time = (localtime() + timedelta(minutes = 3)).time(), end_time = (localtime() + timedelta(minutes = 4)).time(), status="Up")
-        machine_interval = MachineInterval(machine = new_machine, start_time = start_time, end_time = end_time, status="Up")
-        machine_interval.save()
-        print("machine_interval", machine_interval, file=sys.stderr)
+        if "start_time" in data and data['start_time'] != "" and 'end_time' in data and data['end_time'] != "":
+            from django.utils.timezone import now, localtime
+            import time
+            from datetime import datetime
+            # "%a %b %d %H:%M:%S %Y"
+            print('start time: ', data['start_time'], 'end time: ', data['end_time'], file=sys.stderr)
+            start_time = time.strptime(data['start_time'], "%H:%M:%S")
+            start_time = datetime.fromtimestamp(time.mktime(start_time)).time()
+            end_time = time.strptime(data['end_time'], "%H:%M:%S")
+            end_time = datetime.fromtimestamp(time.mktime(end_time)).time()
+            print('start time struct', start_time, file=sys.stderr)
+            print('local time', localtime(), file=sys.stderr)
+            
+            # machine_interval = MachineInterval(machine = new_machine, start_time = (localtime() + timedelta(minutes = 3)).time(), end_time = (localtime() + timedelta(minutes = 4)).time(), status="Up")
+            machine_interval = MachineInterval(machine = new_machine, start_time = start_time, end_time = end_time, status="Up")
+            machine_interval.save()
+            print("machine_interval", machine_interval, file=sys.stderr)
         # Add the public key to the authorized keys of the master node
         with open('/root/.ssh/authorized_keys', 'a') as f:
             f.write(new_machine.public_key.read().decode())
@@ -139,64 +140,6 @@ def submit_machine(request):
     return JsonResponse({'public_keys': public_keys,
                          'host_ip_mapping': host_ip_mapping,
                          'premium_rate': format(premium_rate, '.0%')}, safe=False)
-def test_remove_machine(request):
-    machines = Machine.objects.filter(machine_id=int(request.GET.get('machine_id')))
-    context = {}
-    if not machines:
-        context['status'] = False
-        context['error_code'] = 1
-        context['message'] = 'The requested machine does not exist.'
-        return render(request, 'general_status.json', context,
-                      content_type='application/json')
-    
-    machine = machines[0]
-    print("machine.hostname", machine.hostname)
-    ssh_session = subprocess.Popen(
-        ['ssh', '-o', 'StrictHostKeyChecking=no', machine.hostname],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    ssh_session.stdin.write(
-        "/usr/local/hadoop/bin/yarn --daemon stop nodemanager\n".encode('utf-8'))
-    
-    ssh_session.stdin.write(
-        "/usr/local/hadoop/bin/hdfs --daemon stop datanode\n".encode('utf-8'))
-    context['message'] = ssh_session.stdout
-    ssh_session.stdin.close()
-    MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.REMOVE)
-    context['status'] = True
-    context['error_code'] = 0
-    return render(request, 'general_status.json', context,
-                    content_type='application/json')
-
-def test_add_machine(request):
-    machines = Machine.objects.filter(machine_id=int(request.GET.get('machine_id')))
-    context = {}
-    if not machines:
-        context['status'] = False
-        context['error_code'] = 1
-        context['message'] = 'The requested machine does not exist.'
-        return render(request, 'general_status.json', context,
-                      content_type='application/json')
-    
-    machine = machines[0]
-    ssh_session = subprocess.Popen(
-        ['ssh', '-o', 'StrictHostKeyChecking=no', machine.hostname],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    ssh_session.stdin.write("echo 'test' > test.txt\n".encode('utf-8'))
-    ssh_session.stdin.write(
-        "/usr/local/hadoop/bin/yarn --daemon start nodemanager\n".encode('utf-8'))
-    ssh_session.stdin.write(
-        "/usr/local/hadoop/bin/hdfs --daemon start datanode\n".encode('utf-8'))
-    context['message'] = ssh_session.stdout
-    ssh_session.stdin.close()
-    MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.ADD)
-    context['status'] = True
-    context['error_code'] = 0
-    return render(request, 'general_status.json', context,
-                    content_type='application/json')
 
 @login_required
 def remove_machine(request):
