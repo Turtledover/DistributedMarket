@@ -24,7 +24,7 @@ from .cron import *
 from services.corelib.spark import *
 from .credit.credit_core import CreditCore
 from services.corelib.jobhelper import *
-
+import time
 
 ##### User API #####
 @login_required
@@ -92,23 +92,7 @@ def submit_machine(request):
         
         MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.ADD)
         # if data['ip_address']
-        if "start_time" in data and data['start_time'] != "" and 'end_time' in data and data['end_time'] != "":
-            from django.utils.timezone import now, localtime
-            import time
-            from datetime import datetime
-            # "%a %b %d %H:%M:%S %Y"
-            print('start time: ', data['start_time'], 'end time: ', data['end_time'], file=sys.stderr)
-            start_time = time.strptime(data['start_time'], "%H:%M:%S")
-            start_time = datetime.fromtimestamp(time.mktime(start_time)).time()
-            end_time = time.strptime(data['end_time'], "%H:%M:%S")
-            end_time = datetime.fromtimestamp(time.mktime(end_time)).time()
-            print('start time struct', start_time, file=sys.stderr)
-            print('local time', localtime(), file=sys.stderr)
-            
-            # machine_interval = MachineInterval(machine = new_machine, start_time = (localtime() + timedelta(minutes = 3)).time(), end_time = (localtime() + timedelta(minutes = 4)).time(), status="Up")
-            machine_interval = MachineInterval(machine = new_machine, start_time = start_time, end_time = end_time, status="Up")
-            machine_interval.save()
-            print("machine_interval", machine_interval, file=sys.stderr)
+        
         # Add the public key to the authorized keys of the master node
         with open('/root/.ssh/authorized_keys', 'a') as f:
             f.write(new_machine.public_key.read().decode())
@@ -135,6 +119,25 @@ def submit_machine(request):
                     "echo '{0}' >> ~/.ssh/id_rsa.pub\n".format(new_machine.public_key.read().decode()).encode('utf-8'))
                 ssh_session.stdin.close()
                 # end
+        if "start_time" in data and data['start_time'] != "" and 'end_time' in data and data['end_time'] != "":
+            from django.utils.timezone import now, localtime
+            import time
+            from datetime import datetime
+            # "%a %b %d %H:%M:%S %Y"
+            print('start time: ', data['start_time'], 'end time: ', data['end_time'], file=sys.stderr)
+            start_time = time.strptime(data['start_time'], "%H:%M:%S")
+            start_time = datetime.fromtimestamp(time.mktime(start_time)).time()
+            end_time = time.strptime(data['end_time'], "%H:%M:%S")
+            end_time = datetime.fromtimestamp(time.mktime(end_time)).time()
+            print('machine.hostname --', new_machine.hostname)
+            print('start time struct --', start_time, file=sys.stderr)
+            print('local time --', localtime(), file=sys.stderr)
+            
+            
+            MachineLib.operate_machine(new_machine.hostname, MachineLib.MachineOp.REMOVE)
+            machine_interval = MachineInterval(machine = new_machine, start_time = start_time, end_time = end_time, status="Down")
+            machine_interval.save()
+            print("machine_interval", machine_interval, file=sys.stderr)
 
     # end
     return JsonResponse({'public_keys': public_keys,

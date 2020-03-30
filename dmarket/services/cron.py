@@ -128,6 +128,7 @@ class ScanAddMachine(CronJobBase):
         
         
         machine_interval = machine_intervals.first()
+        print("start_time:", machine_interval.start_time, "now:", localtime().time(), file=sys.stderr)
 
         if machine_interval.start_time > localtime().time():
             print("start time > now", "start_time:", machine_interval.start_time, "now:", localtime().time(), file=sys.stderr)
@@ -192,6 +193,7 @@ class ScanRemoveMachine(CronJobBase):
 
         
         machine_interval = machine_intervals.first()
+        print("end_time:", machine_interval.end_time, "now:", localtime().time())
 
         if machine_interval.end_time > localtime().time():
             print("end time > now", "end_time:", machine_interval.end_time, "now:", localtime().time())
