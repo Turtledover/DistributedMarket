@@ -1,6 +1,6 @@
 /usr/local/spark/bin/spark-submit \
 --master yarn \
---deploy-mode cluster \
+--deploy-mode client \
 --queue default \
 --num-executors 2 \
 --executor-memory 2G \
