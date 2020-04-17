@@ -21,7 +21,7 @@ from services import views
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^login/$', auth_views.LoginView.as_view(), {'template_name': 'login.html'}, name='login'),
-    url(r'^logout/$', auth_views.LogoutView.as_view(), {'next_page': '/login'}, name='logout'),
+    url(r'^logout/$', views.logout_user, name='logout'),
     url(r'^signup/$', views.signup, name='signup'),
     path('services/', include('services.urls')),
     path('admin/', admin.site.urls),

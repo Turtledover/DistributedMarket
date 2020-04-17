@@ -10,7 +10,7 @@ from django.http import HttpResponse, JsonResponse
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -29,7 +29,7 @@ import time
 ##### User API #####
 @login_required
 def index(request):
-    return HttpResponse("Hello User {}, world. Distributed Market .".format(request.user.id))
+    return HttpResponse("Hello Master {}, world. Distributed Market.".format(request.user.id))
 
 
 # https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -184,6 +184,38 @@ def remove_machine(request):
     return render(request, 'general_status.json', context, 
         content_type='application/json')
 
+@login_required
+def logout_user(request):
+    context = {}
+    current_user_machines = Machine.objects.filter(user=request.user)
+    if not current_user_machines:
+        logout(request)
+        context['status'] = False
+        context['error_code'] = 1
+        context['message'] = 'User has no Machines Added'
+        return render(request, 'general_status.json', context,
+            content_type='application/json')
+    for m in current_user_machines:
+        machines = Machine.objects.filter(machine_id=m.machine_id)
+        machine = machines[0]
+        MachineLib.operate_machine(machine.hostname, MachineLib.MachineOp.REMOVE)
+        machine_info = {
+            'type': machine.machine_type,
+            'cores': machine.core_num,
+            #credit by lyulinag
+            'memory': machine.memory_size,
+            'duration': int(datetime.datetime.now().strftime("%s")) - (int)(machine.start_time.strftime("%s")),
+            'premium_rate': machine.premium_rate
+        }
+        CreditCore.update_sharing(request.user, machine_info, True)
+        history = HistoryMachine.create(machine)
+        history.user = request.user
+        history.save()
+        machine.delete()
+        logout(request)
+
+    return render(request, 'general_status.json', context,
+        content_type='application/json')
 
 @login_required
 def list_machines(request):
@@ -345,6 +377,8 @@ def get_job_list(request):
     result['jobs'] = []
     for j in jobs:
         retj = {}
+        print(j.user.username)
+        retj['user'] = j.user.username
         retj['job_id'] = j.job_id
         retj['name'] = j.job_name
         retj['status'] = j.status
