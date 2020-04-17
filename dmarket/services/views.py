@@ -28,7 +28,7 @@ from services.corelib.jobhelper import *
 ##### User API #####
 @login_required
 def index(request):
-    return HttpResponse("Hello Master {}, world. Distributed Market.".format(request.user.id))
+    return HttpResponse("Hello {}, world. Distributed Market.".format(request.user.id))
 
 
 # https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -355,7 +355,6 @@ def get_job_list(request):
     result['jobs'] = []
     for j in jobs:
         retj = {}
-        print(j.user.username)
         retj['user'] = j.user.username
         retj['job_id'] = j.job_id
         retj['name'] = j.job_name
