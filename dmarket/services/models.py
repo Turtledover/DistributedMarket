@@ -100,7 +100,7 @@ class Job(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.job_id
+        return ', '.join([str(self.job_id), str(self.job_name), str(self.status)])
 
 
 # class Metadata(models.Model):

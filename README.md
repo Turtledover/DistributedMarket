@@ -43,9 +43,12 @@ Run the Sample MNIST Job: <br/>
 2. `cd /sample/mnist`
 3. Run `download.sh` to download the datasets (Only need to download once)
 4. `./hdfs_copy.sh`
-5. `./hdfs_mnist_data_convert.sh` to submit the job to prepare MNIST data for training
-6. `./hdfs_mnist_train.sh` to submit a job to train on MNIST datasets
-7. `./hdfs_mnist_test.sh` to submit a job to evaluate the training result 
+5. `./hdfs_mnist_train.sh` to submit a job to train on MNIST datasets
+6. `./hdfs_mnist_test.sh` to submit a job to evaluate the training result 
+
+### Get the result
+1. `hdfs dfs -ls hdfs:///user/$USERNAME/mnist/output` to check the output for $USERNAME output. If the $USERNAME is juntaol then the command is `hdfs dfs -ls hdfs:///user/juntaol/mnist/output`
+2. `hadoop fs -copyToLocal hdfs:///user/$USERNAME/mnist/output output` to get the output to local system output directory
 
 ### NOTES for testing in Docker environments
 * In docker environments, the initial cluster only contains 1 master node, which serves as both the datanode and namenode in Hadoop, and both the slave node and master node in Spark. You can then add the user machine to the cluster one by one.
@@ -58,10 +61,10 @@ Run the Sample MNIST Job: <br/>
 ### Use the API
 1. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
 
-entry_file=hdfs:///user/root/mnist/input/code/mnist_data_setup.py
-archives=hdfs:///user/root/mnist/input/data/mnist.zip#mnist
-app_params=--output mnist/output --format csv
-name=MNIST Data Convert
+- entry_file=hdfs:///user/root/mnist/input/code/mnist_data_setup.py
+- archives=hdfs:///user/root/mnist/input/data/mnist.zip#mnist
+- app_params=--output mnist/output --format csv
+- name=MNIST Data Convert
 
 2. Use job list API to get the job status: http://localhost:8000/services/job/list/
 

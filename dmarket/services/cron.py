@@ -19,7 +19,7 @@ class SubmitJobCron(CronJobBase):
     code = 'services.submit_job_cron' # a unique code
 
     def do(self):
-        print('cron run', file=sys.stderr)
+        print('cron run SubmitJobCron', file=sys.stderr)
 
         new_jobs = Job.objects.filter(status='new')
         if len(new_jobs) == 0:
@@ -56,6 +56,7 @@ class ScanFinishedJobCron(CronJobBase):
     spark_status_url = 'http://127.0.0.1:18080/api/v1/applications/'
 
     def do(self):
+        print('cron run ScanFinishedJobCron', file=sys.stderr)
         jobs = Job.objects.filter(Q(status='finished') | Q(status='failed') | Q(status='killed'))
 
         for j in jobs:
