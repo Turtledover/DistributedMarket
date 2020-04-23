@@ -57,6 +57,12 @@ Run the Sample MNIST Job: <br/>
 
 ### Use the API
 1. Submit MNIST data convert job with API: http://localhost:8000/services/job/submit/?entry_file=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fcode%2Fmnist_data_setup.py&archives=hdfs%3A%2F%2F%2Fuser%2Froot%2Fmnist%2Finput%2Fdata%2Fmnist.zip%23mnist&app_params=--output%20mnist%2Foutput%20--format%20csv&name=MNIST%20Data%20Convert
+
+entry_file=hdfs:///user/root/mnist/input/code/mnist_data_setup.py
+archives=hdfs:///user/root/mnist/input/data/mnist.zip#mnist
+app_params=--output mnist/output --format csv
+name=MNIST Data Convert
+
 2. Use job list API to get the job status: http://localhost:8000/services/job/list/
 
 ## Setup on real machines
